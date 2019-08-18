@@ -1,4 +1,10 @@
 # ZZ-Pat
 ZZ-PaT solution for send or receive folder in OpenTM2
-Test 2
+
+
+This program is distributed under a MIT License
+
+More info at www.mkanals.com or infomknals at gmail.com
+
+
 

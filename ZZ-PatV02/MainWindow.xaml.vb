@@ -79,6 +79,7 @@ Class MainWindow
 
         ' si hay un parámetro es el ususario. este código se utiliza tb en
         ' en la obtención del nombre de parámetro 
+        Dim VersionGitHub = "20190818"
         Dim args() As String = Environment.GetCommandLineArgs()
         Dim usuario As String = ""
         If args.Count > 1 Then
