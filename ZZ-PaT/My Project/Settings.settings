@@ -1,0 +1,72 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="ParDirSalida" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\u\tra\kk23\</Value>
+    </Setting>
+    <Setting Name="ParDirPB" Type="System.String" Scope="User">
+      <Value Profile="(Default)">%TEMP%\ZZ-Pat\PB</Value>
+    </Setting>
+    <Setting Name="ParDirTemporal" Type="System.String" Scope="User">
+      <Value Profile="(Default)">%TEMP%\ZZ-Pat\TMP</Value>
+    </Setting>
+    <Setting Name="ParArchivoEXCEL" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\u\tra\excel\Planificacion_10.xls</Value>
+    </Setting>
+    <Setting Name="ParSQL" Type="System.String" Scope="User">
+      <Value Profile="(Default)">SELECT [ProMss] FROM [Hoja1$] where ProIBM='{0}' and  Idioma='{1}'</Value>
+    </Setting>
+    <Setting Name="ParSecreto" Type="System.String" Scope="User">
+      <Value Profile="(Default)">q8H5M8ILz/MiSkEbiBKduvYDRX96JPZsgLIPBmcxJOk=</Value>
+    </Setting>
+    <Setting Name="ParHostUDP" Type="System.String" Scope="User">
+      <Value Profile="(Default)">213.97.57.158</Value>
+    </Setting>
+    <Setting Name="ParPuertoUDP" Type="System.Int64" Scope="User">
+      <Value Profile="(Default)">50505</Value>
+    </Setting>
+    <Setting Name="ParRecopilarUso" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ParIVA" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">21</Value>
+    </Setting>
+    <Setting Name="ParIRPF" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">15</Value>
+    </Setting>
+    <Setting Name="ParProveedor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MSS</Value>
+    </Setting>
+    <Setting Name="ParMasDeUnPB" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="ParTarifaPredeterminada" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0.033</Value>
+    </Setting>
+    <Setting Name="ParCorreoGestor" Type="System.String" Scope="User">
+      <Value Profile="(Default)">none@none.com</Value>
+    </Setting>
+    <Setting Name="ParTipoOrigen" Type="System.String" Scope="User">
+      <Value Profile="(Default)">NONE</Value>
+    </Setting>
+    <Setting Name="ParPGHost" Type="System.String" Scope="User">
+      <Value Profile="(Default)">hostname.or.ip.with.dots</Value>
+    </Setting>
+    <Setting Name="ParPGPuerto" Type="System.Int64" Scope="User">
+      <Value Profile="(Default)">5432</Value>
+    </Setting>
+    <Setting Name="ParPGBaseDatos" Type="System.String" Scope="User">
+      <Value Profile="(Default)">nombre_base_datos</Value>
+    </Setting>
+    <Setting Name="ParPGUsuario" Type="System.String" Scope="User">
+      <Value Profile="(Default)">usuario</Value>
+    </Setting>
+    <Setting Name="ParPGContrasenya" Type="System.String" Scope="User">
+      <Value Profile="(Default)">EM8M2KyjFoGmB+tXQ/uCrvkzkCfRSp59AMIQvXFZ6kU=</Value>
+    </Setting>
+    <Setting Name="ParSQL_Alternativo" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+  </Settings>
+</SettingsFile>

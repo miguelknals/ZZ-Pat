@@ -1,0 +1,41 @@
+﻿<Window x:Class="VentanaParametros"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="VentanaParametros" Height="659.972" Width="601.382">
+    <Grid Margin="5,-26,-5,3">
+        <ComboBox x:Name="ddwTipoDestino" HorizontalAlignment="Left" Margin="241,153,0,0" VerticalAlignment="Top" Width="120"/>
+        <TextBlock HorizontalAlignment="Left" Margin="150,42,0,0" TextWrapping="Wrap" Text="Name" VerticalAlignment="Top" Width="77"/>
+        <TextBox x:Name="txtNombreTraductor" HorizontalAlignment="Left" Height="23" Margin="241,39,0,0" TextWrapping="Wrap" Text="Translator code" VerticalAlignment="Top" Width="269" RenderTransformOrigin="-0.058,0.217"/>
+        <TextBlock HorizontalAlignment="Left" Margin="150,156,0,0" TextWrapping="Wrap" Text="Target type" VerticalAlignment="Top" Width="77"/>
+        <TextBlock HorizontalAlignment="Left" Margin="150,178,0,0" TextWrapping="Wrap" Text="Shared drive:" VerticalAlignment="Top" Width="77"/>
+        <TextBlock HorizontalAlignment="Left" Margin="150,199,0,0" TextWrapping="Wrap" Text="Host:" VerticalAlignment="Top" Width="77"/>
+        <TextBox x:Name="txtSharedDriveHost" HorizontalAlignment="Left" Height="23" Margin="241,196,0,0" TextWrapping="Wrap" Text="LAI17" VerticalAlignment="Top" Width="269" RenderTransformOrigin="-0.058,0.217" IsEnabled="False"/>
+        <TextBlock HorizontalAlignment="Left" Margin="150,227,0,0" TextWrapping="Wrap" Text="Share name" VerticalAlignment="Top" Width="77"/>
+        <TextBox x:Name="txtSharedDriveNombre" HorizontalAlignment="Left" Height="23" Margin="241,224,0,0" TextWrapping="Wrap" Text="\\lai18\almacen\laika" VerticalAlignment="Top" Width="269" RenderTransformOrigin="-0.058,0.217"/>
+        <TextBlock HorizontalAlignment="Left" Margin="150,255,0,0" TextWrapping="Wrap" Text="Share user" VerticalAlignment="Top" Width="77"/>
+        <TextBox x:Name="txtSharedDriveUsuario" HorizontalAlignment="Left" Height="23" Margin="241,252,0,0" TextWrapping="Wrap" Text="laika" VerticalAlignment="Top" Width="269" RenderTransformOrigin="-0.058,0.217" IsEnabled="False"/>
+        <TextBlock HorizontalAlignment="Left" Margin="150,283,0,0" TextWrapping="Wrap" Text="Share pass." VerticalAlignment="Top" Width="77"/>
+        <TextBox x:Name="txtSharedDriveContrasenya" HorizontalAlignment="Left" Height="23" Margin="241,280,0,0" TextWrapping="Wrap" Text="laika" VerticalAlignment="Top" Width="269" RenderTransformOrigin="-0.058,0.217" IsEnabled="False"/>
+        <TextBlock HorizontalAlignment="Left" Margin="150,309,0,0" TextWrapping="Wrap" Text="FTP drive:" VerticalAlignment="Top" Width="77"/>
+        <TextBlock HorizontalAlignment="Left" Margin="150,330,0,0" TextWrapping="Wrap" Text="FTP Host:" VerticalAlignment="Top" Width="77"/>
+        <TextBox x:Name="txtFTPHost" HorizontalAlignment="Left" Height="23" Margin="241,327,0,0" TextWrapping="Wrap" Text="ftp.mss.es" VerticalAlignment="Top" Width="269" RenderTransformOrigin="-0.058,0.217"/>
+        <TextBlock HorizontalAlignment="Left" Margin="150,358,0,0" TextWrapping="Wrap" Text="FTP name" VerticalAlignment="Top" Width="77"/>
+        <TextBox x:Name="txtFTPNombre" HorizontalAlignment="Left" Height="23" Margin="241,355,0,0" TextWrapping="Wrap" Text="\miquelcanals" VerticalAlignment="Top" Width="269" RenderTransformOrigin="-0.058,0.217"/>
+        <TextBlock HorizontalAlignment="Left" Margin="150,386,0,0" TextWrapping="Wrap" Text="FTP user" VerticalAlignment="Top" Width="77"/>
+        <TextBox x:Name="txtFTPUsuario" HorizontalAlignment="Left" Height="23" Margin="241,383,0,0" TextWrapping="Wrap" Text="miquelcanals" VerticalAlignment="Top" Width="269" RenderTransformOrigin="-0.058,0.217"/>
+        <TextBlock HorizontalAlignment="Left" Margin="150,105,0,0" TextWrapping="Wrap" Text="Local Pat dir" VerticalAlignment="Top" Width="77"/>
+        <TextBox x:Name="txtFTPContrasenya" HorizontalAlignment="Left" Height="47" Margin="241,417,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="269" RenderTransformOrigin="-0.058,0.217"/>
+        <Button x:Name="btnGuardarActualizar" Content="Save/Update" HorizontalAlignment="Left" Margin="301,603,0,0" VerticalAlignment="Top" Width="80" RenderTransformOrigin="1.507,0.85"/>
+        <TextBlock HorizontalAlignment="Left" Margin="150,72,0,0" TextWrapping="Wrap" Text="E-mail" VerticalAlignment="Top" Width="77"/>
+        <TextBox x:Name="txtCorreoTraductor" HorizontalAlignment="Left" Height="23" Margin="241,69,0,0" TextWrapping="Wrap" Text="kk@pepe.com" VerticalAlignment="Top" Width="269" RenderTransformOrigin="-0.058,0.217"/>
+        <TextBlock HorizontalAlignment="Left" Margin="86,421,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="141" Height="19"><Run Text="FTP password"/><Run Text=" "/><Run Text="(Encrypted)"/></TextBlock>
+        <TextBox x:Name="txtLocalPatDir" HorizontalAlignment="Left" Height="23" Margin="241,105,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="269" RenderTransformOrigin="-0.058,0.217"/>
+        <TextBlock HorizontalAlignment="Left" Margin="23,569,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="203"><Run Text="Long Int"/><Run Text=" (must be provided by amdin)"/></TextBlock>
+        <TextBox x:Name="txtLongInterno" HorizontalAlignment="Left" Height="23" Margin="240,565,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="269" RenderTransformOrigin="-0.058,0.217"/>
+        <Label Content="In oder to protect you password you must chyper it and then paste it in the encrypted password field" HorizontalAlignment="Left" Margin="39,469,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="txtEncrypt" HorizontalAlignment="Left" Height="55" Margin="241,505,0,0" TextWrapping="Wrap" Text="If you want to cypher your password, enter it here in clear text" VerticalAlignment="Top" Width="269" RenderTransformOrigin="-0.058,0.217"/>
+        <TextBlock HorizontalAlignment="Left" Margin="132,508,0,0" TextWrapping="Wrap" Text="Cypher password" VerticalAlignment="Top" Width="95" Height="20"/>
+        <Button x:Name="btnEncrypt" Content="Encrypt" HorizontalAlignment="Left" Margin="515,506,0,0" VerticalAlignment="Top" Width="69" RenderTransformOrigin="1.507,0.85"/>
+
+    </Grid>
+</Window>
