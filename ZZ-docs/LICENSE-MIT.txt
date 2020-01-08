@@ -1,4 +1,4 @@
-Copyright Miguel Canals <http://www.mkanals.com> (c) 2019 miguelknals@gmail.com
+Copyright Miguel Canals <http://www.mknals.com> (c) 2019 miguelknals@gmail.com
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

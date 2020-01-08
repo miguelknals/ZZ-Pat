@@ -15,6 +15,7 @@ Public Class VentanaParametros
         Dim Par As structParametros
         Par = CargaParametros()
         '
+        ' test
         For Each s In ddwTipoDestino.Items
             If s = Par.DestTipoDestino Then
                 ddwTipoDestino.SelectedItem = s
