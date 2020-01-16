@@ -12,5 +12,12 @@ This program is distributed under a MIT License
 
 More info at www.mknals.com or infomknals at gmail.com
 
+# Changes
+
+2020-01-17
+
+- Now compiled using Net Framework 4.6.1 (Needed for TLS1.2 support)
+- Added FTPES (FTP Explicit SSL TLS 1.2)
+
 
 
