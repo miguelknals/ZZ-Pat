@@ -200,7 +200,16 @@ Class MainWindow
 
                     End Try
                 End While
-            Case "FTP"
+            Case "FTP", "FTPES"
+                Dim TIPO_FTP As String = TipoDeposito
+                ServicePointManager.ServerCertificateValidationCallback =
+                        Function(se As Object,
+                        cert As System.Security.Cryptography.X509Certificates.X509Certificate,
+                        chain As System.Security.Cryptography.X509Certificates.X509Chain,
+                        sslerror As System.Net.Security.SslPolicyErrors) True
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                ' end secure
+
                 ' Archivo FTP, voy a conectarme al servidor FTP para leer el directorio
                 NombrePaTconPath = "" ' supongamos que no hay
                 Dim ftpURI As String
@@ -219,6 +228,13 @@ Class MainWindow
                     FTPSolicitud.Credentials = ftpCrendenciales
                     'FTPSolicitud.Method = WebRequestMethods.Ftp.ListDirectoryDetails
                     FTPSolicitud.Method = WebRequestMethods.Ftp.ListDirectory
+                    'secure
+                    If TIPO_FTP = "FTPES" Then
+                        FTPSolicitud.EnableSsl = True
+                        FTPSolicitud.KeepAlive = False
+                    End If
+                    ' end secure
+
                     FTPRespuesta = CType(FTPSolicitud.GetResponse, FtpWebResponse)
                     StreamFTPRespuesta = FTPRespuesta.GetResponseStream
                     AnyadetxtSalida("We will read ftp directory..." & nl)
@@ -246,6 +262,12 @@ Class MainWindow
                         FTPSolicitud.UseBinary = True
                         FTPSolicitud.Method = System.Net.WebRequestMethods.Ftp.DownloadFile
                         FTPSolicitud.Proxy = Nothing
+                        'secure
+                        If TIPO_FTP = "FTPES" Then
+                            FTPSolicitud.EnableSsl = True
+                            FTPSolicitud.KeepAlive = False
+                        End If
+                        ' end secure
                         AnyadetxtSalida(String.Format("Downloading to -> {0}", archivolocal) & nl)
                         Using response As System.Net.FtpWebResponse = CType(FTPSolicitud.GetResponse, System.Net.FtpWebResponse)
                             Using responseStream As IO.Stream = response.GetResponseStream
@@ -462,7 +484,7 @@ Class MainWindow
         If ListaCarpetasTraducir.FlagAutoInstall = False Then ' pregunto
             ' antes de ponerme a trabajar voy a avisar
             auxS = "New PaT File!" & nl & nl
-            If par.DestTipoDestino = "FTP" Then
+            If par.DestTipoDestino = "FTP" Or par.DestTipoDestino = "FTPES" Then
                 auxS &= String.Format("We have find in the ftp server {0} ", par.DestFTPHost) & nl
                 auxS &= String.Format("The file has downloaded as {0}", NombrePaTconPath) & nl & nl
             Else
@@ -474,7 +496,7 @@ Class MainWindow
             auxS &= "- Folders will be imported in OTM2." & nl
             auxS &= String.Format("- All material will be also in the {0} directory ", DirOutPatconPat) & nl & nl
             Select Case par.DestTipoDestino
-                Case "FTP"
+                Case "FTP", "FTPES"
                     auxS &= "If you wanto to manually process this PaT file:" & nl
                     auxS &= String.Format("1) Go to the ftp host and directory: {0}{0}{1}/{2}{0}{0} ", nl, par.DestFTPHost, par.DestFTPNombre)
                     auxS &= String.Format("2) DOWNLOAD and REMOVE the incoming PaT file: {0}{0}{1}{0}{0} and place it in another directory.{0}", nl, NombrePat)
@@ -497,7 +519,7 @@ Class MainWindow
             auxI = MessageBox.Show(auxS, "Do we unpackage the PaT file? ", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes)
             If auxI = MsgBoxResult.No Then
                 Select Case par.DestTipoDestino
-                    Case "FTP"
+                    Case "FTP", "FTPES"
                         auxS = "Again, new remainder, if you have not, pls remove the PaT file: {0}{0}{1}{0}{0} from {0}{0}{2}/{3}{0}{0}  otherwise you continually receive this message.{0} "
                         auxS = String.Format(auxS, nl, NombrePat, par.DestFTPHost, par.DestFTPNombre)
                     Case Else
@@ -649,7 +671,7 @@ Class MainWindow
             End Try
         End If
         Dim NombrePaTenWIP As String = DirWIP & "\" & NombrePat
-        If TipoDeposito = "PATH" Or TipoDeposito = "SHARED_DRIVE" Or TipoDeposito = "FTP" Then
+        If TipoDeposito = "PATH" Or TipoDeposito = "SHARED_DRIVE" Or TipoDeposito = "FTP" Or TipoDeposito = "FTPES" Then
             Try
                 If File.Exists(NombrePaTenWIP) Then
                     File.Delete(NombrePaTenWIP) ' lo borro si existe el move, no tiene overwrite
@@ -671,7 +693,16 @@ Class MainWindow
         cargalbxWIP(par.DestLocalPatDir)
         ' limpieza en el caso de FTP
         Select Case TipoDeposito
-            Case "FTP"
+            Case "FTP", "FTPES"
+                Dim TIPO_FTP As String = TipoDeposito
+                ServicePointManager.ServerCertificateValidationCallback =
+                        Function(se As Object,
+                        cert As System.Security.Cryptography.X509Certificates.X509Certificate,
+                        chain As System.Security.Cryptography.X509Certificates.X509Chain,
+                        sslerror As System.Net.Security.SslPolicyErrors) True
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                ' end secure
+
                 ' Archivo FTP, voy a conectarme al servidor FTP para leer el directorio
                 NombrePaTconPath = "" ' supongamos que no hay
                 Dim ftpURI As String
@@ -687,6 +718,14 @@ Class MainWindow
                     FTPSolicitud = DirectCast(WebRequest.Create(New Uri(ftpURI)), FtpWebRequest)
                     FTPSolicitud.Credentials = ftpCrendenciales
                     FTPSolicitud.Method = WebRequestMethods.Ftp.DeleteFile
+                    'secure
+                    If TIPO_FTP = "FTPES" Then
+                        FTPSolicitud.EnableSsl = True
+                        FTPSolicitud.KeepAlive = False
+                    End If
+                    ' end secure
+
+
                     Dim respuesta = DirectCast(FTPSolicitud.GetResponse(), FtpWebResponse)
 
 
@@ -920,7 +959,7 @@ Class MainWindow
             Case "SHARED_DRIVE"
                 DirOutFXZ = par.DestSharedDriveNombre
                 auxS &= String.Format("'{0}' ({1})", par.DestSharedDriveNombre, par.DestTipoDestino) & nl & nl
-            Case "FTP"
+            Case "FTP", "FTPES"
                 auxS &= String.Format("'{0}' ({1})", par.DestFTPHost, par.DestFTPNombre) & nl & nl
         End Select
         auxS &= "3) The PaT file will be moved from the working in progress directory to the done directory" & nl & nl
@@ -1036,7 +1075,16 @@ Class MainWindow
                 File.Copy(auxFileSource, auxFileTarget)
                 AnyadetxtSalida("Done!" & nl)
 
-            ElseIf par.DestTipoDestino = "FTP" Then '  debo conectarme y copiar desde el temporal al destino
+            ElseIf par.DestTipoDestino = "FTP" Or par.DestTipoDestino = "FTPES" Then '  debo conectarme y copiar desde el temporal al destino
+                Dim TIPO_FTP = par.DestTipoDestino
+                ServicePointManager.ServerCertificateValidationCallback =
+                        Function(se As Object,
+                        cert As System.Security.Cryptography.X509Certificates.X509Certificate,
+                        chain As System.Security.Cryptography.X509Certificates.X509Chain,
+                        sslerror As System.Net.Security.SslPolicyErrors) True
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                ' end secure
+
                 Dim source As String = auxFileSource
                 ' hostFTP y target calculados al principio
                 Dim target As String = PrefijoTarget & "/" & carpeta & ".FXZ" ' destino FTP
@@ -1053,6 +1101,14 @@ Class MainWindow
                 ftprequest.ReadWriteTimeout = 3600000
                 ftprequest.Timeout = 3600000
                 ftprequest.ContentLength = source.Length
+                'secure
+                If TIPO_FTP = "FTPES" Then
+                    ftprequest.EnableSsl = True
+                    ftprequest.KeepAlive = False
+                End If
+                ' end secure
+
+
                 Dim file As System.IO.FileInfo = New System.IO.FileInfo(source)
                 Dim estaLongiArchivo As Long = file.Length
                 Dim esta5Porciento As Long = estaLongiArchivo * 0.05
@@ -1082,8 +1138,9 @@ Class MainWindow
                         End Using
                         ftpstream.Dispose()
                     End Using
-                    Dim response As FtpWebResponse = CType(ftprequest.GetResponse(), FtpWebResponse)
-                    AnyadetxtSalida(String.Format("Upload File Complete, status {0}", response.StatusDescription))
+                    ' Dim response As FtpWebResponse = CType(ftprequest.GetResponse(), FtpWebResponse)
+                    ' AnyadetxtSalida(String.Format("Upload File Complete, status {0}", response.StatusDescription))
+                    AnyadetxtSalida(String.Format("Upload File Complete"))
 
 
                 Catch ex As System.Net.WebException
@@ -1118,7 +1175,8 @@ Class MainWindow
             File.Copy(auxFileSource, auxFileTarget, True)
             AnyadetxtSalida("Done!" & nl)
 
-        ElseIf par.DestTipoDestino = "FTP" Then '  debo conectarme y copiar desde el temporal al destino
+        ElseIf par.DestTipoDestino = "FTP" Or par.DestTipoDestino = "FTPES" Then  '  debo conectarme y copiar desde el temporal al destino
+            Dim TIPO_FTP = par.DestTipoDestino
             Dim source As String = auxFileSource
             ' hostFTP y target calculados al principio
             Dim target As String = PrefijoTarget & "/" & archivoMFT ' destino FTP
@@ -1135,6 +1193,14 @@ Class MainWindow
             ftprequest.ReadWriteTimeout = 3600000
             ftprequest.Timeout = 3600000
             ftprequest.ContentLength = source.Length
+            'secure
+            If TIPO_FTP = "FTPES" Then
+                ftprequest.EnableSsl = True
+                ftprequest.KeepAlive = False
+            End If
+            ' end secure
+
+
             Dim file As System.IO.FileInfo = New System.IO.FileInfo(source)
             Dim estaLongiArchivo As Long = file.Length
             Dim esta5Porciento As Long = estaLongiArchivo * 0.05
@@ -1164,9 +1230,9 @@ Class MainWindow
                     End Using
                     ftpstream.Dispose()
                 End Using
-                Dim response As FtpWebResponse = CType(ftprequest.GetResponse(), FtpWebResponse)
-                AnyadetxtSalida(String.Format("Upload File Complete, status {0}", response.StatusDescription))
-
+                'Dim response As FtpWebResponse = CType(ftprequest.GetResponse(), FtpWebResponse)
+                'AnyadetxtSalida(String.Format("Upload File Complete, status {0}", response.StatusDescription))
+                AnyadetxtSalida(String.Format("Manifest uploaded!"))
 
             Catch ex As System.Net.WebException
                 MsgBox(auxS, MsgBoxStyle.Critical, "OMG FTP error!")
@@ -1268,7 +1334,7 @@ Class MainWindow
             ' creo que solo es válido con "PATH" y "SHARED_DRIVE"
             Dim lin2() As String
             Select Case par.DestTipoDestino
-                Case "FTP"
+                Case "FTP", "FTPES"
                     msg.Subject = String.Format("PaT name: {0} / From: {1}({2}) / In: {3}", NombrePatsinExtension, par.DestNombre, par.DestCorreo, par.DestFTPHost & "\" & par.DestFTPNombre)
                     lin2 = {
                "<HTML><BODY>",

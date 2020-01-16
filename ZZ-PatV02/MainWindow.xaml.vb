@@ -833,7 +833,7 @@ Class MainWindow
                         Finally
 
                         End Try
-                    Case "FTP"
+                    Case "FTP", "FTPES"
                         ' no va con archivos grandes
                         ' https://msdn.microsoft.com/en-us/library/vstudio/ms229715%28v=vs.100%29.aspx
                         ' ' con buffer pero no acaba de funcionar 
@@ -843,7 +843,8 @@ Class MainWindow
                         ' Mirar la respuesta de:
                         ''https://social.msdn.microsoft.com/Forums/en-US/246ffc07-1cab-44b5-b529-f1135866ebca/exception-the-underlying-connection-was-closed-the-connection-was-closed-unexpectedly?forum=netfxnetcom en relación a problemas que tiene
 
-                        AnyadetxtSalida(String.Format("FTP" & nl))
+                        Dim TIPO_FTP = destino.DestTipoDestino ' FTP O FTPES
+                        AnyadetxtSalida(TIPO_FTP & nl)
                         Dim Contrasenya As String = DecryptWithKey(destino.DestFTPContrasenya, Par.ParLongInterno)
                         Contrasenya = Contrasenya.Replace(destino.DestNombre, "")
                         Dim source As String = Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT
@@ -865,6 +866,21 @@ Class MainWindow
                         ftprequest.ReadWriteTimeout = 300000 '3600000
                         ftprequest.Timeout = 600000 ' 3600000
                         ftprequest.ContentLength = source.Length
+
+                        If TIPO_FTP = "FTPES" Then
+                            ftprequest.EnableSsl = True
+                            ftprequest.KeepAlive = False
+                        End If
+                        ServicePointManager.ServerCertificateValidationCallback =
+                        Function(se As Object,
+                        cert As System.Security.Cryptography.X509Certificates.X509Certificate,
+                        chain As System.Security.Cryptography.X509Certificates.X509Chain,
+                        sslerror As System.Net.Security.SslPolicyErrors) True
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                        ' end secure
+
+
+
                         Dim file As System.IO.FileInfo = New System.IO.FileInfo(source)
                         Dim estaLongiArchivo As Long = file.Length
                         Dim esta5Porciento As Long = estaLongiArchivo * 0.05
@@ -901,9 +917,11 @@ Class MainWindow
                                         End If
                                     Loop Until dataread < buffer
 
+
                                     request.Dispose()
                                 End Using
                                 ftpstream.Dispose()
+
                             End Using
                         Catch ex As Exception
                             auxS = "PaT is fine, but ZZ-Pat cannot read ftp dir. Correct the problem or send PaT manually. " & nl
@@ -915,15 +933,25 @@ Class MainWindow
                             txtSalida.AppendText(auxS & nl)
                             Exit Sub
                         End Try
-                        Dim response As FtpWebResponse = CType(ftprequest.GetResponse(), FtpWebResponse)
-                        AnyadetxtSalida(String.Format("Upload File Complete, status {0}", response.StatusDescription))
+
+                        'Dim response As FtpWebResponse = CType(ftprequest.GetResponse(), FtpWebResponse)
+                        'AnyadetxtSalida(String.Format("Upload File Complete, status {0}", response.StatusDescription))
+                        AnyadetxtSalida(String.Format("Upload File Complete"))
                         Try
                             ' antes de hacer el rename intento borrarlo si existe.
-                            ftprequest = DirectCast(WebRequest.Create(New Uri(target.Replace(".PaT.zip.TMP", ".Pat.zip"))), FtpWebRequest)
+                            ftprequest = DirectCast(WebRequest.Create(New Uri(target.Replace(".PaT.zip.TMP", ".PaT.zip"))), FtpWebRequest)
                             ftprequest.Credentials = New System.Net.NetworkCredential(destino.DestFTPUsuario, Contrasenya)
                             ftprequest.Method = WebRequestMethods.Ftp.DeleteFile
+                            ' secure
+                            If TIPO_FTP = "FTPES" Then
+                                ftprequest.EnableSsl = True
+                                ftprequest.KeepAlive = False
+                            End If
+                            ' end secure
+                            Dim response As FtpWebResponse
                             response = DirectCast(ftprequest.GetResponse(), FtpWebResponse)
                         Catch ex As Exception
+                            Dim auxs3 As String = ex.Message
                             ' es normal que de excepción, normalmente el target nunca existirá.
                         End Try
 
@@ -934,6 +962,15 @@ Class MainWindow
                             auxS = Path.GetFileName(target) : auxS = auxS.Replace(".PaT.zip.TMP", ".Pat.zip")
                             ftprequest.RenameTo = auxS
                             ftprequest.Method = WebRequestMethods.Ftp.Rename
+                            ' secure
+                            If TIPO_FTP = "FTPES" Then
+                                ftprequest.EnableSsl = True
+                                ftprequest.KeepAlive = False
+                            End If
+                            ' end secure
+
+                            Dim response As FtpWebResponse = CType(ftprequest.GetResponse(), FtpWebResponse)
+
                             response = DirectCast(ftprequest.GetResponse(), FtpWebResponse)
 
 
@@ -991,8 +1028,8 @@ Class MainWindow
                             auxS = String.Format("Target directory: {0}", destino.DestPath)
                         Case "SHARED_DRIVE"
                             auxS = String.Format("Target directory: {0}", destino.DestSharedDriveNombre)
-                        Case "FTP"
-                            auxS = String.Format("Host: {0}<br>User: {1}<br>Target directory: {2}", destino.DestFTPHost, destino.DestFTPUsuario, destino.DestFTPNombre)
+                        Case "FTP", "FTPES"
+                            auxS = String.Format("{0}: {1}<br>User: {2}<br>Target: {2}", destino.DestTipoDestino, destino.DestFTPHost, destino.DestFTPUsuario, destino.DestFTPNombre)
                     End Select
 
                     Dim lin2() As String = {
@@ -1227,8 +1264,8 @@ Class MainWindow
                     auxS &= String.Format(" Target: {0} ", .DestPath)
                 Case "SHARED_DRIVE"
                     auxS &= String.Format(" Target:  {0} ({1})", .DestSharedDriveNombre, .DestSharedDriveUsuario)
-                Case "FTP"
-                    auxS &= String.Format(" Target:  {0} ({1} / {2})", .DestFTPNombre, .DestFTPHost, .DestSharedDriveUsuario)
+                Case "FTP", "FTPES"
+                    auxS &= String.Format(" {0}:  {1} ({2} / {3})", .DestTipoDestino, .DestFTPNombre, .DestFTPHost, .DestSharedDriveUsuario)
                 Case Else
             End Select
         End With
@@ -1263,8 +1300,8 @@ Class MainWindow
                             auxS &= String.Format(" Target: {0} ", .DestPath)
                         Case "SHARED_DRIVE"
                             auxS &= String.Format(" Target:  {0} ({1})", .DestSharedDriveNombre, .DestSharedDriveUsuario)
-                        Case "FTP"
-                            auxS &= String.Format(" Target:  {0} ({1} / {2})", .DestFTPNombre, .DestFTPHost, .DestSharedDriveUsuario)
+                        Case "FTP", "FTPES"
+                            auxS &= String.Format(" {0}:  {1} ({2} / {3})", .DestTipoDestino, .DestFTPNombre, .DestFTPHost, .DestSharedDriveUsuario)
                         Case Else
                     End Select
                 End With

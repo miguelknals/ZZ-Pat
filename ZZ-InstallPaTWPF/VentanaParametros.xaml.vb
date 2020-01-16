@@ -45,6 +45,7 @@ Public Class VentanaParametros
             .Items.Add("PATH")
             .Items.Add("SHARED_DRIVE")
             .Items.Add("FTP")
+            .Items.Add("FTPES")
         End With
         Return Nothing
     End Function

@@ -191,7 +191,7 @@ Public Class ProcesaManifiesto
             Dim source As String
             ' Discutible el destino puede ser DirectorioGestor o el de ejecución.
 
-            Dim TargetMascara As String = TargetDirectorio & "\{0}.fxz"
+            Dim TargetMascara As String = TargetDirectorio & "\{0}.FXZ"
             Dim target As String = ""
             Dim carpeta As String = ""
 
@@ -278,7 +278,15 @@ Public Class ProcesaManifiesto
                             End If
                         End Try
                         ' ahora lo unzipo
-                    Case "FTP"
+                    Case "FTP", "FTPES"
+                        Dim TIPO_FTP = TipoDestino
+                        ServicePointManager.ServerCertificateValidationCallback =
+                        Function(se As Object,
+                        cert As System.Security.Cryptography.X509Certificates.X509Certificate,
+                        chain As System.Security.Cryptography.X509Certificates.X509Chain,
+                        sslerror As System.Net.Security.SslPolicyErrors) True
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+
                         ' tengo que bajar los fxz del repositorio a 
                         For Each fila In ListaCarpetasTraducir.tCarpetasTraducir.Rows
                             carpeta = fila("carpeta")
@@ -286,7 +294,7 @@ Public Class ProcesaManifiesto
                             If Not (destino.DestFTPNombre.EndsWith("/")) Then destino.DestFTPNombre &= "/"
                             ' Archivo FTP, voy a conectarme al servidor FTP para leer el directorio
                             Dim ftpURI As String
-                            ftpURI = "ftp://" & destino.DestFTPHost & destino.DestFTPNombre ' si no añado / al final me sale el subdir
+                            ftpURI = "ftp://" & destino.DestFTPHost & "/" & destino.DestFTPNombre ' si no añado / al final me sale el subdir
                             ftpURI &= carpeta & ".FXZ"
                             Dim contrasenya As String = DecryptWithKey(destino.DestFTPContrasenya, ParLongInterno)
                             Dim ftpCrendenciales As NetworkCredential = New System.Net.NetworkCredential(destino.DestFTPUsuario, contrasenya)
@@ -303,7 +311,13 @@ Public Class ProcesaManifiesto
                                 FTPSolicitud.KeepAlive = True
                                 FTPSolicitud.UseBinary = True
                                 FTPSolicitud.Method = System.Net.WebRequestMethods.Ftp.DownloadFile
-                                    FTPSolicitud.Proxy = Nothing
+                                FTPSolicitud.Proxy = Nothing
+                                'secure
+                                If TIPO_FTP = "FTPES" Then
+                                    FTPSolicitud.EnableSsl = True
+                                    FTPSolicitud.KeepAlive = False
+                                End If
+                                ' end secure
                                 AnyadetxtSalida(String.Format("Downloading to -> {0}", archivolocal) & nl)
                                 Using response As System.Net.FtpWebResponse = CType(FTPSolicitud.GetResponse, System.Net.FtpWebResponse)
                                     Using responseStream As IO.Stream = response.GetResponseStream
@@ -330,6 +344,13 @@ Public Class ProcesaManifiesto
                                 FTPSolicitud = DirectCast(WebRequest.Create(New Uri(ftpURI)), FtpWebRequest)
                                 FTPSolicitud.Credentials = ftpCrendenciales
                                 FTPSolicitud.Method = WebRequestMethods.Ftp.DeleteFile
+                                'secure
+                                If TIPO_FTP = "FTPES" Then
+                                    FTPSolicitud.EnableSsl = True
+                                    FTPSolicitud.KeepAlive = False
+                                End If
+                                ' end secure
+
                                 Dim respuesta = DirectCast(FTPSolicitud.GetResponse(), FtpWebResponse)
                                 
 
