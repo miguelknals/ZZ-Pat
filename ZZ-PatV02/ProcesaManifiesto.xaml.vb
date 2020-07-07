@@ -43,6 +43,21 @@ Public Class ProcesaManifiesto
         ParMailHost = Par.ParMailHost
         ParMailUsuario = Par.ParMailUsuario
 
+        ' necesito los perfiles del opentm, así que copio código
+        Dim InfoOTM As New ClassInfoOTM
+        If InfoOTM.TodoOK = False Then
+            Dim temp As Window = New Window()
+            temp.Visibility = Windows.Visibility.Hidden
+            temp.Show()
+            MessageBox.Show(temp, InfoOTM.Info, "OTM Error", MessageBoxButton.OK, MessageBoxImage.Error)
+            Application.Current.Shutdown()
+            Exit Sub
+        End If
+
+        ' Dim DiscoOTM As String = InfoOTM.DiscoOTM
+        ' CargaListaCarpetasDDW(InfoOTM.Carpetas)
+
+
 
     End Sub
 
@@ -403,7 +418,7 @@ Public Class ProcesaManifiesto
 continua_sin_traductor:
         End If
 
-        Dim reemplazarcarpetas As Boolean = chkImportar.IsChecked
+        Dim reemplazarcarpetas As Boolean = chkImportar.IsChecked ' Import folders in current OpenTM2 environment
         ' voy a ver que tengo al menos las carpetas
         Dim row As DataRow : Dim auxB As Boolean = True ' en principio suponemos que todo ok.
         Dim unidad As String = Path.GetPathRoot(ParDirTemporal).Substring(0, 1) ' la letra
@@ -429,7 +444,7 @@ continua_sin_traductor:
                     Dim carpetaWCT As String = ""
                     Dim ArchivoFinCal As String = ""
                     Dim unidadtarget = Path.GetPathRoot(TargetDirectorio).Substring(0, 1)
-                    If reemplazarcarpetas Then
+                    If reemplazarcarpetas Then ' importar en el entorno de opentm2 (lo habitual)
                         Dim DirectorioCopiaSeguridad As String = TargetDirectorio & "\01_OTMBackup"
                         Dim DirectorioCopiaSeguridadSinUnidad As String =
                             Path.DirectorySeparatorChar & DirectorioCopiaSeguridad.Replace(Path.GetPathRoot(DirectorioCopiaSeguridad), "")
@@ -458,18 +473,17 @@ continua_sin_traductor:
                             End If
                             AnyadetxtSalida(" -> Importing updating folder")
                             mandato = " /TAsk=FLDIMP  /FLD={0} /FromPath={1} /FROMDRIVE={2} /OPtions=MEM /QUIET=NOMSG  "
-                                mandato = String.Format(mandato, carpeta, TargetDirectorioSinUnidad, unidadtarget)
-                                ' AnyadeSalida(mdto)
-                                ejecuta(mandato, rc)
-                                If rc <> 0 Then
-                                    MsgBox(String.Format("Cannot import  updating folder {0} {1} . RC={2}",
+                            mandato = String.Format(mandato, carpeta, TargetDirectorioSinUnidad, unidadtarget)
+                            ' AnyadeSalida(mdto)
+                            ejecuta(mandato, rc)
+                            If rc <> 0 Then
+                                MsgBox(String.Format("Cannot import  updating folder {0} {1} . RC={2}",
                                                      TargetDirectorioSinUnidad, carpeta, rc.ToString), MsgBoxStyle.Critical, "Updating folder cannot be imported")
-                                    Exit Sub
-                                End If
-                                ' analizo
-                                AnyadetxtSalida(" -> Folder to be udpated has been merged with the updating folder) ")
+                                Exit Sub
+                            End If
+                            ' analizo
+                            AnyadetxtSalida(" -> Folder to be udpated has been merged with the updating folder) ")
 
-                            ' ahora importo la carpeta que tengo
                             ' ahora el calculating final
                             opcion = "/PROFILE=" & row("Perfil")
                             ArchivoFinCal = TargetDirectorio & String.Format("\{0}_{1}_fin_cal.rpt", carpeta, row("Perfil"))
@@ -483,6 +497,41 @@ continua_sin_traductor:
                                 txtSalida.AppendText(auxS & nl)
                                 MsgBox(auxS, MsgBoxStyle.Critical, "Cannot run final calculating report")
                                 Exit Sub
+                            End If
+                            AnyadetxtSalida(String.Format(" -> Folder calculating done ({0}) ", row("Perfil")))
+
+
+                            If chkContajeAdicional.IsChecked Then ' tengo que cerrar la carpeta con contaje de IBM
+                                ' esta parte es desde luego hardcode
+                                Dim curretPrf As String = row("Perfil")
+                                Select Case curretPrf
+                                    Case "PII20184"
+                                    Case "PUB20184"
+                                    Case Else
+                                        If Len(curretPrf) >= 3 Then
+                                            Dim nperfil As String = ""
+                                            Dim TresLetasPerfil As String = curretPrf.Substring(0, 3)
+                                            If TresLetasPerfil = "PII" Then nperfil = "PII20184"
+                                            If TresLetasPerfil = "PUB" Then nperfil = "PUB20184"
+                                            If nperfil <> "" Then ' tengo que calcularo para el perfil de IBM
+                                                ' ahora el calculating final
+                                                opcion = "/PROFILE=" & nperfil
+                                                ArchivoFinCal = TargetDirectorio & String.Format("\{0}_{1}_fin_cal.rpt", carpeta, nperfil)
+                                                mandato = "/TAsk=CNTRPT /FLD={0} /OUT={1} /RE=CALCULATING /TYPE=BASE_SUMMARY_FACT {2} /OV=YES /QUIET=NOMSG"
+                                                mandato = String.Format(mandato, carpeta, ArchivoFinCal, opcion)
+                                                ejecuta(mandato, rc) ' calcula calculating final
+                                                ' Shell(mandato, AppWinStyle.MinimizedFocus, True, -1)
+                                                If rc <> 0 Then
+                                                    'Dim debuginfo As String = "" :If Debug Then debuginfo = vbCrLf & mandatoT
+                                                    auxS = "Error: Cannot run the final calculating for IBM profile. RC=" & rc.ToString
+                                                    txtSalida.AppendText(auxS & nl)
+                                                    MsgBox(auxS, MsgBoxStyle.Information, "Cannot run final IBM calculating report. Process will continue.")
+                                                End If
+                                                AnyadetxtSalida(String.Format(" -> Folder calculating done ({0}) ", nperfil))
+                                            End If
+                                        End If
+                                End Select
+
                             End If
 
 
