@@ -516,9 +516,10 @@ continua_sin_traductor:
                                             If nperfil <> "" Then ' tengo que calcularo para el perfil de IBM
                                                 ' ahora el calculating final
                                                 opcion = "/PROFILE=" & nperfil
-                                                ArchivoFinCal = TargetDirectorio & String.Format("\{0}_{1}_fin_cal.rpt", carpeta, nperfil)
+                                                Dim ArchivoFinCalIBM As String = "" ' originalmente ArchivoFinCal pero es que se usa para la PO
+                                                ArchivoFinCalIBM = TargetDirectorio & String.Format("\{0}_{1}_fin_cal.rpt", carpeta, nperfil)
                                                 mandato = "/TAsk=CNTRPT /FLD={0} /OUT={1} /RE=CALCULATING /TYPE=BASE_SUMMARY_FACT {2} /OV=YES /QUIET=NOMSG"
-                                                mandato = String.Format(mandato, carpeta, ArchivoFinCal, opcion)
+                                                mandato = String.Format(mandato, carpeta, ArchivoFinCalIBM, opcion)
                                                 ejecuta(mandato, rc) ' calcula calculating final
                                                 ' Shell(mandato, AppWinStyle.MinimizedFocus, True, -1)
                                                 If rc <> 0 Then
