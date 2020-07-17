@@ -498,7 +498,7 @@ continua_sin_traductor:
                                 MsgBox(auxS, MsgBoxStyle.Critical, "Cannot run final calculating report")
                                 Exit Sub
                             End If
-                            AnyadetxtSalida(String.Format(" -> Folder calculating done ({0}) ", row("Perfil")))
+                            AnyadetxtSalida(String.Format(" -> Folder calculating done ({0}) " & nl, row("Perfil")))
 
 
                             If chkContajeAdicional.IsChecked Then ' tengo que cerrar la carpeta con contaje de IBM
@@ -528,7 +528,7 @@ continua_sin_traductor:
                                                     txtSalida.AppendText(auxS & nl)
                                                     MsgBox(auxS, MsgBoxStyle.Information, "Cannot run final IBM calculating report. Process will continue.")
                                                 End If
-                                                AnyadetxtSalida(String.Format(" -> Folder calculating done ({0}) ", nperfil))
+                                                AnyadetxtSalida(String.Format(" -> Folder calculating done ({0}) " & nl, nperfil))
                                             End If
                                         End If
                                 End Select
@@ -597,7 +597,9 @@ continua_sin_traductor:
 
                     ' al llegar aquí ArchivoFinCal tiene el calculating final
                     ' voy a saco
+
                     Dim lines As String() = IO.File.ReadAllLines(ArchivoFinCal)
+                    txtSalida.AppendText("ArchivoFinCal " & ArchivoFinCal & nl)
                     Dim ultimalinea = lines(lines.Length - 3) ' Payable words  : 235.78
                     lines = Nothing
                     Dim ValColSal() As String = Split(ultimalinea)
