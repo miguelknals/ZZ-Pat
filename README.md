@@ -19,5 +19,15 @@ More info at www.mknals.com or infomknals at gmail.com
 - Now compiled using Net Framework 4.6.1 (Needed for TLS1.2 support)
 - Added FTPES (FTP Explicit SSL TLS 1.2)
 
+2020-08-12
+
+- Added a preview dialog before sending a PaT
+- Hardcoded changes. When foinal calculating is create, it will also tray to create it according IBM profiles.
+- Minor layot changes in UI and in the HTML sent to translators
+
+
+(C) 2020 miguel canals (http://www.mknals.com) MIT License
+
+
 
 

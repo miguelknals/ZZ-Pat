@@ -31,7 +31,7 @@
             ' en principio selecciono el primero
             ddwDestinos.SelectedIndex = posiDestino ' desencadena Changed
             Dim DestinoSeleccionado As String = ddwDestinos.SelectedItem
-            
+
             ActualizaVentaDestinosCon(DestinoSeleccionado)
 
 

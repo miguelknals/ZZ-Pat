@@ -246,6 +246,7 @@ Public Module ModuloRutPat2
         startInfo.WindowStyle = ProcessWindowStyle.Minimized
         startInfo.Arguments = mandato
         startInfo.UseShellExecute = False ' si no pongo false, no recupera el path, me obligaría a indicarlos en otmbath.
+        ' startInfo.CreateNoWindow = True (Efectivamente lo oculta, pero no se como hacer refresh)
 
         Try
             newProc = Process.Start(startInfo)
@@ -295,6 +296,8 @@ Public Module ModuloRutPat2
         If dirTra <> "" Then
             newProc.StartInfo.WorkingDirectory = dirTra
         End If
+        ' newProc.StartInfo.CreateNoWindow = True 'True (Efectivamente lo oculta, pero no se como hacer refresh)
+
         newProc.Start()
         ' Do not wait for the child process to exit before
         ' reading to the end of its redirected stream.

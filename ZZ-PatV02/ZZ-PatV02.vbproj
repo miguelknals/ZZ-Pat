@@ -47,6 +47,9 @@
   <PropertyGroup>
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>ZZ-PAT-Letra.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -84,6 +87,9 @@
     <Compile Include="VentanaParametros.xaml.vb">
       <DependentUpon>VentanaParametros.xaml</DependentUpon>
     </Compile>
+    <Compile Include="VentanaResumen.xaml.vb">
+      <DependentUpon>VentanaResumen.xaml</DependentUpon>
+    </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -108,6 +114,10 @@
     <Page Include="VentanaParametros.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="VentanaResumen.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -158,9 +168,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="caralaika.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <SplashScreen Include="mknals.jpg" />
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +177,7 @@
     <Content Include="zip.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="ZZ-PAT-Letra.ico" />
     <Content Include="ZZ_PAR.XML">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

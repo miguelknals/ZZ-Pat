@@ -84,6 +84,15 @@ Class MainWindow
         Dim usuario As String = ""
         If args.Count > 1 Then
             usuario = args(1)
+        Else
+            Dim temp As Window = New Window()
+            temp.Visibility = Windows.Visibility.Hidden
+            temp.Show()
+            Dim Info As String = "You need to specify a user. Call as ZZ-PatV02.exe username, a ZZ-PatV02_PAR_username.XML will be created if not exist."
+            MessageBox.Show(temp, Info, "Invoking this application, you must user a username", MessageBoxButton.OK, MessageBoxImage.Error)
+            Application.Current.Shutdown()
+            Exit Sub
+
         End If
 
 
@@ -119,6 +128,8 @@ Class MainWindow
         chkCNT.IsChecked = True ' si cnt
         chkIniCal.IsChecked = True ' no calculatin inical
         chkPreAna.IsChecked = True
+        ' Fecha de entrega
+        dpiFechaEntrega.SelectedDate = Date.Today
 
         ' valores
 
@@ -307,6 +318,7 @@ Class MainWindow
         End If
         Return s
     End Function
+
     Private Sub btnWCT_Click(sender As Object, e As RoutedEventArgs) Handles btnWCT.Click
         ' inicio algún contr
 
@@ -366,7 +378,7 @@ Class MainWindow
         ' http://stackoverflow.com/questions/5192169/update-gui-using-backgroundworker
         ' 
         If ListaCarpetasTraducir.nCarpetas <= 0 Then
-            txtSalida.AppendText("OPPS -> No hay carpetas" & nl)
+            txtSalida.AppendText("OPPS -> There are no folders" & nl)
             auxS = "There are not any folders to be translated. Select one o more folders."
             MsgBox(auxS, MsgBoxStyle.Exclamation, "Empty folders list")
             txtSalida.AppendText(auxS & nl)
@@ -525,6 +537,7 @@ Class MainWindow
             End If
 
 
+
         Next
         ListaCarpetasTraducir.tCarpetasTraducir.AcceptChanges()
         dgCarpetas.ItemsSource = ListaCarpetasTraducir.tCarpetasTraducir.DefaultView
@@ -661,7 +674,7 @@ Class MainWindow
         'txtSalida.AppendText("Hecho" & nl)
 
         Dim ArchivoMFT_HTML As String = Environment.ExpandEnvironmentVariables(Par.ParDirTemporal) & NombrePaT.Replace(".PaT.zip", "") & "_MFT.HTM"
-        txtSalida.AppendText("Creating and zipping " & ArchivoMFT_HTML & "  ...")
+        txtSalida.AppendText("Creating and zipping " & ArchivoMFT_HTML & " ..." & nl)
         If ListaCarpetasTraducir.GeneraMFT_HTML(ArchivoMFT_HTML) = False Then
             txtSalida.AppendText(String.Format(
                 "Fatal error. HTML manifest cannot be written: {0}" & nl,
@@ -675,12 +688,43 @@ Class MainWindow
         'File.Delete(ArchivoMFT_HTML)
         'txtSalida.AppendText("Done" & nl)
 
+        ' Ahora la parte de la confiración voy a leer el HTML
+        Dim ContenidoHTML As String = ""
+        Try
+            ' En realidad lo importante que necesito está en la definición de la clase
+            ' pero hay 2 cosa que no están y que quiero avisar al usuario. 
+            ' if If chkMail.IsChecked is false, Email will not be sent
+            ContenidoHTML = My.Computer.FileSystem.ReadAllText(ArchivoMFT_HTML)
+            Dim SendEmail As Boolean = chkMail.IsChecked
+            If ListaCarpetasTraducir.NombreTraductor = "NONE" Then SendEmail = False ' If "NONE" has no sense to send any mail
+            Dim VR As New VentanaResumen(ContenidoHTML, SendEmail)
+            Dim Resultado As Boolean = VR.ShowDialog()
+            If Resultado = False Then
+                txtSalida.AppendText("**** User has cancel sent ****" & nl)
+                ' voy a intentar eliminar el PaT
+                Try
+                    Dim PatFullName As String = Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT
+                    If File.Exists(PatFullName) Then
+                        File.Delete(PatFullName)
+                    End If
+                Catch ex As Exception
+
+                End Try
+
+                Exit Sub
+
+            End If
+        Catch ex As Exception
+            txtSalida.AppendText(String.Format("WARNING. Cannot read {0} to display confirmation dialgo. Process continues.", ArchivoMFT_HTML) & nl)
+
+        End Try
+
 
 
 
         ' serializo y guardo la contraseña
         Dim ArchivoMFXML As String = Environment.ExpandEnvironmentVariables(Par.ParDirTemporal) & NombrePaT.Replace(".PaT.zip", "") & "_MFT.XML"
-        txtSalida.AppendText("Creating and zipping " & ArchivoMFXML & "  ...")
+        txtSalida.AppendText("Creating and zipping " & ArchivoMFXML & "  ..." & nl)
 
         Dim auxB As Boolean = False
         auxB = ListaCarpetasTraducir.Serializate(ArchivoMFXML) 'Serializate mejora el codigo no respetaba CRLF
@@ -765,6 +809,7 @@ Class MainWindow
 
         AnyadetxtSalida("PaT file created succesfully in: " & Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT & nl)
         'txtSalida.AppendText("Archivo PaT creado satisfactoriamente en: " & Par.ParDirSalidaPaT & NombrePaT & nl)
+
 
 
         ' ahora la parte de automatización:
@@ -1218,13 +1263,13 @@ Class MainWindow
         txtSalida.AppendText(s)
         txtSalida.SelectionStart = txtSalida.Text.Length
         txtSalida.ScrollToEnd()
-        txtSalida.Refresh()
+        txtSalida.Refresh() '' creo no sirve de nada
         Return 0
     End Function
 
 
     Private Sub btnAyuda_Click(sender As Object, e As RoutedEventArgs) Handles btnAyuda.Click
-        System.Diagnostics.Process.Start("http://www.mknals.com/010_1_TMT_ZZ-Pat.html")
+        System.Diagnostics.Process.Start("http://www.mknals.com/02_ZZPaT_Overview.html")
     End Sub
 
 
@@ -1863,30 +1908,103 @@ Public Class ClaseListaCarpetasTraducir
     Function GeneraMFT_HTML(archivo As String) As Boolean
         Dim Par As structParametros
         Par = CargaParametros()
+
+        ' Esto es adicional para complementar la información de la confirmación
+        Dim NombreTraductor As String = Me.NombreTraductor
+        Dim CorreoTraductor As String = "N/A"
+        Dim TipoDest As String = "N/A"
+        Dim Target As String = "N/A"
+        Dim Source As String = Me.DirectorioGestor
+        If Not Source.EndsWith("\") Then Source &= "\"
+        Source &= NombrePaT
+        If NombreTraductor <> "NONE" Then ' tengo que copiar
+            Dim destino As New structDestino
+            Dim listadestinos As structListaDestinos
+            listadestinos = CargaDestinos()
+            ' boy a buscar la info de mi destino
+            Dim encontrado As Boolean = False
+            For Each destino In listadestinos.ListaDestino
+                If destino.DestNombre = NombreTraductor Then
+                    encontrado = True
+                    Exit For
+                End If
+            Next
+            If encontrado = False Then ' algo mal, no puede ser que tenga destino que no encuentre
+                ' es un error interno no se bien qué hacer
+            Else
+                CorreoTraductor = destino.DestCorreo
+                TipoDest = destino.DestTipoDestino
+                ' hay info, ahora lo envio de acuerdo a cada caso.
+                Select Case TipoDest
+                    Case "PATH"
+                        Target = destino.DestPath
+                        If Not target.EndsWith("\") Then target &= "\"
+                        Target &= NombrePaT
+                    Case "SHARED_DRIVE"
+                        Target = destino.DestSharedDriveNombre
+                        If Not Target.EndsWith("\") Then Target &= "\"
+                        Target &= NombrePaT
+                    Case "FTP", "FTPES"
+                        Dim TIPO_FTP = destino.DestTipoDestino ' FTP O FTPES
+                        Dim hostFTP As String = "ftp://" & destino.DestFTPHost
+                        If Not hostFTP.EndsWith("/") Then hostFTP &= "/"
+
+                        Target = hostFTP & destino.DestFTPNombre
+                        If Not Target.EndsWith("/") Then Target &= "/"
+                        Target &= NombrePaT & ".TMP"
+
+                    Case Else
+                        ' Other internal error
+                        ' auxS = "Internal error. Target has not target type PATH, SHARED_DRIVE or FTP"
+                        ' Exit Sub
+
+                End Select
+            End If
+        End If
+        ' Al llegar tengo NombreTraductor CorreoTraductor TipoDest Target 
+
+
+        ' Esto es lo relamente importante
         Dim todoOK As Boolean = True ' optimismo
         Dim sbSalidaMF As New StringBuilder(String.Format("<HTML><HEAD><TITLE>{0}</TITLE></HEAD><BODY>", Me.NombrePaT))
         Dim nl As String = "<br>" & Environment.NewLine
         Dim lin() As String = {
             "<H2><b>PaT name:</b> {0}</H2>" & nl,
+            "<b>Source PaT:</b> {0}" & nl,
+            "<b>Target PaT:</b> ({0}) {1}" & nl & nl,
+            "<b>Translator:</b> {0} ({1})" & nl & nl,
             "<b>Due date:</b> {0}" & nl,
-            "<b>Notes:</b>" & nl & " {0}" & nl,
-            "<b>Folder references:</b>" & nl & "{0}" & nl,
             "" & nl
            }
         Dim s As Integer = 0
-        lin(s) = String.Format(lin(s), Me.NombrePaT) : s += 1
-        ' necesitamos fecha
+        lin(s) = String.Format(lin(s), Me.NombrePaT) : s += 1 ' Nombre de pat
+        ' necesitamos fecha        
+        lin(s) = String.Format(lin(s), Source) : s += 1 ' Directorio gestor
+        lin(s) = String.Format(lin(s), TipoDest, Target) : s += 1 ' (TipoDest) Target
+        If NombreTraductor = "NONE" Then
+            lin(s) = String.Format(lin(s), "PaT will not be sent, only created in source directory", "") : s += 1 ' Nombre traductor (correo)
+        Else
+            lin(s) = String.Format(lin(s), Me.NombreTraductor, CorreoTraductor) : s += 1 ' Nombre traductor (correo)
+        End If
 
         Dim kk As String = Me.FechaEntrega.ToString("dd/MMM/yyyy")
-        lin(s) = String.Format(lin(s), kk) : s += 1
-        lin(s) = String.Format(lin(s), Me.Notas) : s += 1
+        lin(s) = String.Format(lin(s), kk) : s += 1 ' Due date
+
+        ' Las referencias y las notas, lo dejamos para el final
+        Dim lin_2() As String = {
+                    nl & "<b>Folder references:</b>" & nl & "{0}" & nl,
+                             nl & "<b>Notes:</b>" & nl & " {0}" & nl,
+            "" & nl
+           }
+        Dim s_2 As Integer = 0
         ' las referencias las busco en la clase
-        Dim auxS As String = ""
-        Dim auxS2 As String = "" : auxS = ""
+        Dim auxS2 As String = "" : Dim auxS As String = ""
         For Each auxS2 In ListaReferencias.Referencias
             auxS &= auxS2 & nl
         Next
-        lin(s) = String.Format(lin(s), auxS) : s += 1
+        lin_2(s_2) = String.Format(lin_2(s_2), auxS) : s_2 += 1 ' Reference list
+        lin_2(s_2) = String.Format(lin_2(s_2), Me.Notas) : s_2 += 1 ' Notes
+
 
         '
         ' ahora la lista de carpetas
@@ -1918,15 +2036,15 @@ Public Class ClaseListaCarpetasTraducir
         sbSalidaMF.Append(IniFila & auxS & FinFila) ' añado cabecera
         For Each fila In Me.tCarpetasTraducir.Rows
             auxS = ""
-            auxS &= String.Format("<td>{0}</td>", fila("Carpeta"))
+            auxS &= String.Format("<td><b>{0}</b></td>", fila("Carpeta"))
             auxS &= String.Format("<td>{0}</td>", fila("ProMSS"))
             auxS &= String.Format("<td>{0}</td>", fila("ProBase"))
             auxS &= String.Format("<td>{0}</td>", fila("Idioma"))
             auxS &= String.Format("<td>{0}</td>", fila("ProIBM"))
             auxS &= String.Format("<td>{0}</td>", fila("Envio"))
-            auxS &= String.Format("<td>{0}</td>", fila("Perfil"))
+            auxS &= String.Format("<td><b>{0}</b></td>", fila("Perfil"))
             If fila("bCNT") Then
-                auxS &= String.Format("<td>{0}</td>", fila("CNT"))
+                auxS &= String.Format("<td><b>{0}</b></td>", fila("CNT"))
             Else
                 auxS &= String.Format("<td>{0}</td>", "N/D")
             End If
@@ -1945,9 +2063,16 @@ Public Class ClaseListaCarpetasTraducir
             sbSalidaMF.Append(IniFila & auxS & FinFila)
         Next
         sbSalidaMF.Append(FinTabla)
+
+        ' ahora la parte final
+        For s_2 = 0 To lin_2.Count - 1
+            sbSalidaMF.Append(lin_2(s_2))
+        Next
         sbSalidaMF.Append("</BODY></HTML>")
+
+
         Dim sw As System.IO.StreamWriter
-        sw = My.Computer.FileSystem.OpenTextFileWriter(archivo, True)
+        sw = My.Computer.FileSystem.OpenTextFileWriter(archivo, False) ' False es no append
         Try
             sw.Write(sbSalidaMF.ToString)
         Catch ex As Exception
@@ -2087,7 +2212,7 @@ Public Class ClaseListaCarpetasTraducir
         sbSalidaMF.Append(FinTabla)
         sbSalidaMF.Append("</BODY></HTML>")
         Dim sw As System.IO.StreamWriter
-        sw = My.Computer.FileSystem.OpenTextFileWriter(archivo, True)
+        sw = My.Computer.FileSystem.OpenTextFileWriter(archivo, False) ' False es no append
         Try
             sw.Write(sbSalidaMF.ToString)
         Catch ex As Exception
