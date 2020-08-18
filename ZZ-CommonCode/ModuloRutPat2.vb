@@ -231,17 +231,13 @@ Public Module ModuloRutPat2
         End Sub
     End Class
 
-    Public Sub ejecuta(ByVal mandato As String, ByRef procEC As Integer)
+    Public Sub ejecuta(ByVal mandato As String, ByRef procEC As Integer, Optional debuga As Boolean = False)
 
 
-        Dim debug = False
+
         Dim procID As Integer
         Dim newProc As Diagnostics.Process
-        If debug Then
-            Dim sw As New StreamWriter("C:\tmp.tmp", True)
-            sw.WriteLine(mandato)
-            sw.Close()
-        End If
+        If debuga Then logea(mandato)
         Dim startInfo As New ProcessStartInfo("OTMBATCH.EXE")
         startInfo.WindowStyle = ProcessWindowStyle.Minimized
         startInfo.Arguments = mandato
@@ -261,14 +257,11 @@ Public Module ModuloRutPat2
             If newProc.HasExited Then
                 procEC = newProc.ExitCode
             End If
-            If debug Then
-                Dim sw As New StreamWriter("C:\tmp.tmp", True)
-                sw.WriteLine("RC=" & procEC.ToString)
-                sw.Close()
-            End If
+            If debuga Then logea("RC=" & procEC.ToString)
 
         Catch ex As Exception
             procEC = 999 ' error fatal
+            If debuga Then logea("Excp= " & ex.ToString)
             Exit Sub
         End Try
 
@@ -276,15 +269,18 @@ Public Module ModuloRutPat2
 
     End Sub
 
-    Sub mandatoZip(mandato As String, ByRef procEC As Integer, Optional ByRef dirTra As String = "")
+    Sub mandatoZip(mandato As String, ByRef procEC As Integer,
+                   Optional ByRef dirTra As String = "",
+                   Optional ByRef debuga As Boolean = False)
         procEC = 0
         Dim newProc As New Diagnostics.Process
-        ' esto divide el mandato en principio (el exe) y los parámetros
-
+        ' Por un lado tengo el mandato con zip/unzip.exe xxx" debo separarlo
         Dim principio As String = "" : Dim resto As String = "" : Dim primerblanco As Integer = 0
         primerblanco = InStr(mandato, " ")
         principio = mandato.Substring(0, primerblanco - 1)
         resto = mandato.Substring(primerblanco, Len(mandato) - primerblanco)
+        If debuga Then logea(String.Format("dirTra='{0}' mdto='{1}'", dirTra, mandato))
+
 
         'info proceso
         newProc.StartInfo.FileName = principio
@@ -293,9 +289,9 @@ Public Module ModuloRutPat2
         newProc.StartInfo.RedirectStandardOutput = True
         newProc.StartInfo.UseShellExecute = False
         newProc.StartInfo.RedirectStandardOutput = True
-        If dirTra <> "" Then
-            newProc.StartInfo.WorkingDirectory = dirTra
-        End If
+        'If dirTra <> "" Then
+        newProc.StartInfo.WorkingDirectory = dirTra
+        'End If
         ' newProc.StartInfo.CreateNoWindow = True 'True (Efectivamente lo oculta, pero no se como hacer refresh)
 
         newProc.Start()
@@ -306,9 +302,26 @@ Public Module ModuloRutPat2
         ' necesito esperar de lo contrario a veces salía de aquí sin haber acabado
         ' http://msdn.microsoft.com/en-us/library/system.diagnostics.process.standardoutput.aspx
         Dim output As String = newProc.StandardOutput.ReadToEnd()
+        If debuga Then logea(String.Format("Output -> '{0}'", output))
         newProc.WaitForExit()
 
     End Sub
 
+    Sub logea(s As String, Optional borra As Boolean = False)
+        Dim nl As String = Environment.NewLine
+        Dim logea_archivo As String = "Log.txt"
+        Try
+            If borra Then
+                If File.Exists(logea_archivo) Then
+                    File.Delete(logea_archivo)
+                End If
+            Else
+                File.AppendAllText(logea_archivo, s & nl)
+            End If
+
+        Catch ex As Exception
+
+        End Try
+    End Sub
 
 End Module

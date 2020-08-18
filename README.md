@@ -22,8 +22,13 @@ More info at www.mknals.com or infomknals at gmail.com
 2020-08-12
 
 - Added a preview dialog before sending a PaT
-- Hardcoded changes. When foinal calculating is create, it will also tray to create it according IBM profiles.
+- Hardcoded changes. When final calculating is create, it will also tray to create IBM profiles countings.
 - Minor layot changes in UI and in the HTML sent to translators
+
+2020-08-18
+
+- Support for paths with blanks
+- PaT sent are logged in log.txt 
 
 
 (C) 2020 miguel canals (http://www.mknals.com) MIT License

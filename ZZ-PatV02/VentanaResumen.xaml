@@ -5,12 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ZZ_PatV02"
         mc:Ignorable="d"
-        Title="Summary Window" Height="800" Width="700">
+        Title="Summary Window" Height="800" Width="750">
     <Grid>
         <WebBrowser Name="myWebBrowser" Margin="0,66,0,53"/>
         <Label Content="Review Summary " HorizontalAlignment="Left" Margin="26,1,0,0" VerticalAlignment="Top" FontSize="14" FontWeight="Bold"/>
-        <Button x:Name="btnSendOK" Content="Create and sent PaT" HorizontalAlignment="Left" Margin="10,738,0,0" VerticalAlignment="Top" Width="122"/>
-        <Button x:Name="btnCancelar" Content="Cancel " HorizontalAlignment="Left" Margin="150,738,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button x:Name="btnSendOK" Content="Create and sent PaT" HorizontalAlignment="Left" Margin="10,738,0,0" VerticalAlignment="Top" Width="122" FontWeight="Bold"/>
+        <Button x:Name="btnCancelar" Content="Cancel " HorizontalAlignment="Left" Margin="149,738,0,0" VerticalAlignment="Top" Width="75"/>
         <Label x:Name="lblSendStatus" Content="Send status" HorizontalAlignment="Left" Margin="26,35,0,0" VerticalAlignment="Top" RenderTransformOrigin="-5.053,0.769"/>
 
 

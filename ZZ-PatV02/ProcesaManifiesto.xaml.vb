@@ -394,15 +394,15 @@ Public Class ProcesaManifiesto
                 DirEjeucion = System.Reflection.Assembly.GetExecutingAssembly().Location ' ubicación ejecutable
                 DirEjeucion = Path.GetDirectoryName(DirEjeucion)
                 ' desempaqueto
-                Dim PreZip = DirEjeucion & "\unzip.exe"
+                Dim PreZip = "unzip.exe" ' recordar el directorio de ejecución es al llamar al mandato zip
                 Dim mdto As String = ""
                 Dim rc As Integer = 0
                 For Each fila In ListaCarpetasTraducir.tCarpetasTraducir.Rows
                     carpeta = fila("carpeta")
                     target = String.Format(TargetMascara, carpeta)
-                    mdto = PreZip & String.Format(" -o {0} -d {1} ", target, TargetDirectorio)
+                    mdto = PreZip & String.Format(" -o ""{0}"" -d ""{1}"" ", target, TargetDirectorio)
                     AnyadetxtSalida(String.Format("Unziping {0} in {1}...", target, ListaCarpetasTraducir.DirectorioGestor))
-                    mandatoZip(mdto, rc)
+                    mandatoZip(mdto, rc, , False)
                     If rc <> 0 Then
                         auxS = String.Format("Unzip command did not work. ('{0}' exited with rc {1}). ", mdto, rc) & nl & nl
                         auxS &= "Check for return codes in http://www.info-zip.org/mans/unzip.html#DIAGNOSTICS . Also check dir paths. " & nl
@@ -414,6 +414,7 @@ Public Class ProcesaManifiesto
                     AnyadetxtSalida("Done!" & nl)
                 Next
             End If
+
 
 continua_sin_traductor:
         End If
@@ -643,10 +644,10 @@ continua_sin_traductor:
         dgCarpetas.IsReadOnly = True
         '
         '
-        ' tengo que gernar la OS
+        ' tengo que gernar la orden de compra
 
         Dim archivoOC As String = TargetDirectorio & "\" & ListaCarpetasTraducir.NombrePaT.Replace(".PaT", "") & "_PO.HTM"
-
+        ' La Orden de compra se genera con 2 llamadas
         If ListaCarpetasTraducir.GeneraOC_HTML(archivoOC, "") = False Then
             txtSalida.AppendText("Fatal error. We have not been able to generate the purchase order (1st Part)" & nl)
             Exit Sub

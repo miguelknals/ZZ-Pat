@@ -21,6 +21,7 @@ Imports System.Configuration ' to read app.settings
 Class MainWindow
     Dim debug As Boolean = False
     Dim nl As String = Environment.NewLine
+    Dim dq As String = Chr(34) ' Double quote
     Dim ListaCarpetasTraducir As New ClaseListaCarpetasTraducir
     Dim ListaReferencias As New ClaseListaReferencias
 
@@ -324,13 +325,17 @@ Class MainWindow
 
         AnyadetxtSalida("")
 
-        Dim debuga As Boolean = True
+        Dim debuga As Boolean = False ' crea un log.txt en el directorio de ejecución con mandatos MainWindow
+        If debuga Then logea("", True) ' borro el log
 
         ' antes de hacer nada, miro las condiciones
         ' 1) Necesito nombre
         Dim auxS As String = ""
-        Dim PreZip As String = System.Reflection.Assembly.GetExecutingAssembly().Location
-        PreZip = Path.GetDirectoryName(PreZip) & "\zip.exe "
+        Dim PreZip As String = ""
+        Dim DirEje = System.Reflection.Assembly.GetExecutingAssembly().Location
+        DirEje = Path.GetDirectoryName(DirEje)  ' el directorio ejecución
+        If debuga Then logea(String.Format("Dir ejecución ->'{0}'", DirEje))
+        PreZip = String.Format("zip.exe") ' el path se añade al llamarlo
         ' ahora me interesa la parte ejecutable 
         Dim bCrearPaT As Boolean = True
         Dim NombrePaT As String = txtNombrePaT.Text
@@ -354,6 +359,8 @@ Class MainWindow
         End If
 
         If bCrearPaT Then
+            ' para evitar problema no quiero caracteres especiales
+
 
             If NombrePaT = "" Then
                 'txtSalida.AppendText("Si se va a crear un PaT, debe haber un nombre " & nl)
@@ -362,12 +369,24 @@ Class MainWindow
                 Exit Sub
                 txtSalida.AppendText(auxS & nl)
             Else ' si existe lo borra
-                NombrePaT &= ".PaT.zip"
-                ' borro el paquete si existe
-                If File.Exists(Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT) Then
-                    File.Delete(Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT)
+                Dim specialchar = " []#$%^&*()=|{}'<>/\?" ' allow dot
+                If NombrePaT.IndexOfAny(specialchar.ToCharArray) <> -1 Then
+                    auxS = "Pat name cannot contain blanks nor special list char " & specialchar
+                    MsgBox(auxS, MsgBoxStyle.Exclamation, "PaT contains forbidden chars")
+                    Exit Sub
+                    txtSalida.AppendText(auxS & nl)
+                Else
+                    NombrePaT &= ".PaT.zip"
+                    ' borro el paquete si existe. Aquí el path sale con comillas. No hace falta hacer nada.
+                    If File.Exists(Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT) Then
+                        File.Delete(Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT)
+                    End If
                 End If
+
             End If
+            ' PaT has an standar name with no blanks
+
+
         End If
         txtSalida.AppendText("PaT filename: " & Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT & nl)
         ' Necesitaré el traductor
@@ -440,6 +459,7 @@ Class MainWindow
             ' si tengo que crear el paquete exportaré la carpeta y haré el zip
             ' Voy a crear los directorios temporales 
             Try
+                ' verificado para quote path. debería estar ok.
                 If (Not System.IO.Directory.Exists(Environment.ExpandEnvironmentVariables(Par.ParDirTemporal))) Then
                     System.IO.Directory.CreateDirectory(Environment.ExpandEnvironmentVariables(Par.ParDirTemporal))
                     txtSalida.AppendText(String.Format("Created temporary dir {0}", Environment.ExpandEnvironmentVariables(Par.ParDirTemporal)) & nl)
@@ -457,11 +477,12 @@ Class MainWindow
                 auxS = Path.GetPathRoot(Environment.ExpandEnvironmentVariables(Par.ParDirTemporal)) ' C:\
                 auxS = auxS.Replace("\", "") ' C: que es lo que debo quitar
                 Dim DirTemporalSinUnidad As String = Environment.ExpandEnvironmentVariables(Par.ParDirTemporal).Replace(auxS, "")
+                ' nota -> OTMBATCH maneja correcatamente los paths con espacios 
                 mandato = " /TAsk=FLDEXP /FLD={0} /TOdrive={1} /ToPath={2} /OPtions=(MEM,ROMEM,DOCMEM) /OVerwrite=YES /QUIET=NOMSG  "
                 mandato = String.Format(mandato, carpeta, unidad, DirTemporalSinUnidad) ' exportaré al directorio temporal
-                ejecuta(mandato, RC)
+                ejecuta(mandato, RC, debuga) ' debuga es opcional
                 If RC <> 0 Then
-                    auxS = "Folder " & carpeta & " cannot be exported in directory " & Environment.ExpandEnvironmentVariables(Par.ParDirTemporal) & ". " &
+                    auxS = "Folder " & carpeta & " cannot be exported in directory " & Environment.ExpandEnvironmentVariables(Par.ParDirTemporal) & ". Verify all memories are in place. " &
                            "RC=" & RC.ToString
                     MsgBox(auxS, MsgBoxStyle.Exclamation, "Folder cannot be exported" & nl)
                     txtSalida.AppendText(auxS & nl)
@@ -470,8 +491,14 @@ Class MainWindow
                 'txtSalida.AppendText("Carpeta " & carpeta & " exporada en " & Par.ParDirTemporal & nl)
                 AnyadetxtSalida("Folder " & carpeta & " exported in " & Environment.ExpandEnvironmentVariables(Par.ParDirTemporal))
                 ' ahora el zip
-                auxS = PreZip & " -j " & Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT & " " & Environment.ExpandEnvironmentVariables(Par.ParDirTemporal) & carpeta & ".FXP"
-                mandatoZip(auxS, RC)
+                auxS = PreZip & " -j " & String.Format("""{0}{1}"" ""{2}{3}"" ",
+                                     Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT),
+                                     NombrePaT,
+                                     Environment.ExpandEnvironmentVariables(Par.ParDirTemporal),
+                                     carpeta & ".FXP")
+
+                If debug Then logea("Zipping FXP ->  " & auxS)
+                mandatoZip(auxS, RC, , debuga) ' DirEjecución y debuga son opcionales
                 ' lo borro
                 File.Delete(Environment.ExpandEnvironmentVariables(Par.ParDirTemporal) & carpeta & ".FXP")
             End If
@@ -485,8 +512,12 @@ Class MainWindow
                     fila("CNT") = ContajeCT.contaje
                     If bCrearPaT Then
                         ' zip kkk.zip arhivo (añade el archivo al zip) D es para que no ponga el path
-                        auxS = PreZip & " -j " & Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT & " " & archivosalida
-                        mandatoZip(auxS, RC) ' el rc no hace nada
+                        auxS = PreZip & " -j " & String.Format("""{0}{1}"" ""{2}"" ",
+                                     Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT),
+                                     NombrePaT,
+                                     archivosalida)
+                        If debug Then logea("Zipping CNT ->  " & auxS)
+                        mandatoZip(auxS, RC, , debuga) ' el rc no hace nada
                     End If
                     File.Delete(archivosalida)
 
@@ -505,8 +536,13 @@ Class MainWindow
                     fila("IniCal") = ContajeCalculating.contaje
                     If bCrearPaT Then
                         ' zip kkk.zip arhivo (añade el archivo al zip) D es para que no ponga el path
-                        auxS = PreZip & " -j " & Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT & " " & archivosalida
-                        mandatoZip(auxS, RC) ' el rc no hace nada
+                        auxS = PreZip & " -j " & String.Format("""{0}{1}"" ""{2}"" ",
+                                     Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT),
+                                     NombrePaT,
+                                     archivosalida)
+                        If debug Then logea("zipping INI CAL->  " & auxS)
+                        mandatoZip(auxS, RC, , debuga) ' el rc no hace nada
+
                     End If
                     File.Delete(archivosalida)
                 Else
@@ -526,8 +562,12 @@ Class MainWindow
                     fila("PreAna") = ContajePreAnalisis.contaje
                     If bCrearPaT Then
                         ' zip kkk.zip arhivo (añade el archivo al zip) D es para que no ponga el path
-                        auxS = PreZip & " -j " & Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT & " " & archivosalida
-                        mandatoZip(auxS, RC) ' el rc no hace nada
+                        auxS = PreZip & " -j " & String.Format("""{0}{1}"" ""{2}"" ",
+                                     Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT),
+                                     NombrePaT,
+                                     archivosalida)
+                        If debug Then logea("zipping PREANA->  " & auxS)
+                        mandatoZip(auxS, RC, , debuga) ' el rc no hace nada
                     End If
                     File.Delete(archivosalida)
                 Else
@@ -682,8 +722,14 @@ Class MainWindow
             Exit Sub
         End If
         ' lo anayado al zip
-        auxS = PreZip & " -j " & Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT & " " & ArchivoMFT_HTML
-        mandatoZip(auxS, RC)
+        auxS = PreZip & " -j " & String.Format("""{0}{1}"" ""{2}"" ",
+                                     Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT),
+                                     NombrePaT,
+                                     ArchivoMFT_HTML)
+        If debug Then logea("zipping MFT HTML->  " & auxS)
+        mandatoZip(auxS, RC, , debuga) ' el rc no hace nada
+
+
         ' lo borro
         'File.Delete(ArchivoMFT_HTML)
         'txtSalida.AppendText("Done" & nl)
@@ -753,8 +799,16 @@ Class MainWindow
         ' 
 
         ' lo anayado al zip
-        auxS = PreZip & " -j " & Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT & " " & ArchivoMFXML
-        mandatoZip(auxS, RC)
+        ' lo anayado al zip
+        auxS = PreZip & " -j " & String.Format("""{0}{1}"" ""{2}"" ",
+                                     Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT),
+                                     NombrePaT,
+                                     ArchivoMFXML)
+        If debug Then logea("zipping MFT XML->  " & auxS)
+        mandatoZip(auxS, RC, , debuga) ' el rc no hace nada
+
+
+
         ' lo borro
         File.Delete(ArchivoMFXML)
         txtSalida.AppendText("Done" & nl)
@@ -797,10 +851,12 @@ Class MainWindow
             Next
 
             ' ahora lo añado con path al zip
-            auxS = PreZip & " -u " & Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT & " " & "Ref\*"
-            'txtSalida.AppendText("Zipeando referencias ...")
-            AnyadetxtSalida("Zipping references...")
-            mandatoZip(auxS, RC, Environment.ExpandEnvironmentVariables(Par.ParDirTemporal))
+            auxS = PreZip & " -u " & String.Format("""{0}{1}"" ""{2}"" ",
+                                     Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT),
+                                     NombrePaT,
+                                     "Ref\*") ' Para guardar el path relativo DEBO ejecutar zip desde el directorio padre
+            If debug Then logea("zipping references ->  " & auxS)
+            mandatoZip(auxS, RC, Environment.ExpandEnvironmentVariables(Par.ParDirTemporal), debuga) ' el directorio de trabajo debe ser dir padre de Ref para empaquetar
             'txtSalida.AppendText("Referencias zipeadas")
             AnyadetxtSalida("Zipped" & nl)
         Catch ex As Exception
@@ -1108,8 +1164,13 @@ Class MainWindow
         End If
         ' ahora el correo
         txtSalida.AppendText("Some clean up..." & nl)
+        txtSalida.AppendText("Udating log..." & nl)
+        logea(String.Format("{0:yyyy-MM-dd HH:mm:ss} {1} {2}", Now,
+                            ListaCarpetasTraducir.CorreoGestor,
+                            ListaCarpetasTraducir.NombrePaT))
         File.Delete(ArchivoMFT_HTML)
         txtSalida.AppendText("Done" & nl)
+
 
         'If Par.ParRecopilarUso Then
         'Dim EnvioUDP As New strucEnvioUDP(Par.ParRecopilarUso, Par.ParHostUDP, Par.ParPuertoUDP, Par.ParProveedor, txtNombrePaT.Text)
@@ -2211,8 +2272,10 @@ Public Class ClaseListaCarpetasTraducir
         End If
         sbSalidaMF.Append(FinTabla)
         sbSalidaMF.Append("</BODY></HTML>")
+        Dim boolappend As Boolean = False ' en principio sin append
+        If TipoI = "FAC" Then boolappend = True
         Dim sw As System.IO.StreamWriter
-        sw = My.Computer.FileSystem.OpenTextFileWriter(archivo, False) ' False es no append
+        sw = My.Computer.FileSystem.OpenTextFileWriter(archivo, boolappend) ' False es no append
         Try
             sw.Write(sbSalidaMF.ToString)
         Catch ex As Exception

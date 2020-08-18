@@ -12,14 +12,14 @@
         <CheckBox x:Name="chkCNT" Content="Count plain words" HorizontalAlignment="Left" Margin="160,62,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.194,-0.462"/>
         <CheckBox x:Name="chkIniCal" Content="Initial calculating" HorizontalAlignment="Left" Margin="161,99,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.081,0.385"/>
         <DataGrid x:Name="dgCarpetas"  HorizontalAlignment="Left" Margin="10,204,0,0" VerticalAlignment="Top" Height="130" Width="965"/>
-        <Button x:Name="btnWCT" Content="Create and sent PaT" HorizontalAlignment="Left" Margin="807,144,0,0" VerticalAlignment="Top" Width="169" FontWeight="Bold"/>
+        <Button x:Name="btnWCT" Content="Create and sent PaT..." HorizontalAlignment="Left" Margin="807,144,0,0" VerticalAlignment="Top" Width="169" FontWeight="Bold"/>
         <Button x:Name="btnParametros" Content="Parameters..." HorizontalAlignment="Left" Margin="850,15,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="1.067,0.5"/>
         <Button x:Name="btnCargarMFT" Content="Load manifest..." HorizontalAlignment="Left" Margin="734,15,0,0" VerticalAlignment="Top" Width="111" Click="Button_Click_1" RenderTransformOrigin="2.225,2.1" FontWeight="Bold"/>
-        <TextBlock HorizontalAlignment="Left" Margin="378,43,0,0" TextWrapping="Wrap" Text="Due date:" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="349,43,0,0" TextWrapping="Wrap" Text="Due date:" VerticalAlignment="Top"/>
         <TextBlock HorizontalAlignment="Left" Margin="160,174,0,0" TextWrapping="Wrap" Text="Rate" VerticalAlignment="Top"/>
-        <DatePicker x:Name="dpiFechaEntrega" HorizontalAlignment="Left" Margin="440,38,0,0" VerticalAlignment="Top" Width="116"/>
+        <DatePicker x:Name="dpiFechaEntrega" HorizontalAlignment="Left" Margin="411,38,0,0" VerticalAlignment="Top" Width="116"/>
         <TextBox x:Name="txtTarifa" HorizontalAlignment="Left" Height="23" Margin="197,171,0,0" TextWrapping="Wrap" Text="0,033" VerticalAlignment="Top" Width="50"/>
-        <TextBox x:Name="txtNotas" HorizontalAlignment="Left" Height="120" Margin="10,346,0,0" TextWrapping="Wrap" Text="Enter PaT notes" VerticalAlignment="Top" Width="487" AcceptsReturn="True" VerticalScrollBarVisibility="Visible" RenderTransformOrigin="0.725,1.222"/>
+        <TextBox x:Name="txtNotas" HorizontalAlignment="Left" Height="120" Margin="10,346,0,0" TextWrapping="Wrap" Text="Enter translator notes" VerticalAlignment="Top" Width="487" AcceptsReturn="True" VerticalScrollBarVisibility="Visible" RenderTransformOrigin="0.725,1.222"/>
         <TextBlock HorizontalAlignment="Left" Margin="282,145,0,0" TextWrapping="Wrap" Text="PaT name" VerticalAlignment="Top"/>
         <TextBox x:Name="txtNombrePaT" HorizontalAlignment="Left" Height="23" Margin="347,142,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="455"/>
         <Button x:Name="txtBorrarCarpetasTraducir" Content="Remove" HorizontalAlignment="Left" Margin="814,177,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.44,-1.8"/>
@@ -27,7 +27,7 @@
         <TextBlock HorizontalAlignment="Left" Margin="160,119,0,0" TextWrapping="Wrap" Text="Shipment" VerticalAlignment="Top"/>
         <TextBox x:Name="txtEnvio" HorizontalAlignment="Left" Height="23" Margin="160,138,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="113" />
         <Button x:Name="btnTest" Content="Button" HorizontalAlignment="Left" Margin="821,347,0,0" VerticalAlignment="Top" Width="75"/>
-        <TextBlock x:Name="txtDirPaT" HorizontalAlignment="Left" Margin="295,72,0,0" TextWrapping="Wrap" Text="PaT ouput (Drag &amp; Drop):" VerticalAlignment="Top" RenderTransformOrigin="0.287,-3.375"/>
+        <TextBlock x:Name="txtDirPaT" HorizontalAlignment="Left" Margin="287,72,0,0" TextWrapping="Wrap" Text="PaT Dir (Drag &amp; Drop):" VerticalAlignment="Top" RenderTransformOrigin="0.287,-3.375"/>
         <Button x:Name="btnAyuda" Content="Help..." HorizontalAlignment="Left" Margin="930,15,0,0" VerticalAlignment="Top" Width="47" RenderTransformOrigin="3.307,-0.5"/>
         <Button x:Name="btnDestinos" Content="Target..." HorizontalAlignment="Left" Margin="496,99,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="1.067,0.5"/>
         <ComboBox x:Name="cbxDestinoPaT" HorizontalAlignment="Left" Margin="283,101,0,0" VerticalAlignment="Top" Width="152"/>
@@ -35,7 +35,7 @@
         <CheckBox x:Name="chkMail" Content="E-Mail" HorizontalAlignment="Left" Margin="440,104,0,0" VerticalAlignment="Top" IsChecked="True"/>
         <CheckBox x:Name="chkPreAna" Content="Preanalysis" HorizontalAlignment="Left" Margin="161,80,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.081,0.385"/>
         <Button x:Name="btnObtenInfo" Content="Get count info" HorizontalAlignment="Left" Margin="410,177,0,0" VerticalAlignment="Top" Width="106" RenderTransformOrigin="0.44,-1.8"/>
-        <TextBox x:Name="txtPatOutput" HorizontalAlignment="Left" Height="23" Margin="440,70,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="521"/>
+        <TextBox x:Name="txtPatOutput" HorizontalAlignment="Left" Height="23" Margin="412,70,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="565"/>
         <CheckBox x:Name="chkCreateFiles" Content="Create file report in PaT output with " HorizontalAlignment="Left" Margin="526,180,0,0" VerticalAlignment="Top"/>
         <Button x:Name="txtBorrarTodasCarpetasTraducir" Content="Remove all" HorizontalAlignment="Left" Margin="900,177,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.44,-1.8"/>
         <TextBox x:Name="txtSufijo" HorizontalAlignment="Left" Height="23" Margin="741,176,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="52"/>
