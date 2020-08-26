@@ -2,143 +2,17 @@
 <structListaDestinos xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ListaDestino>
     <structDestino>
-      <DestNombre>Ana_Belen_Rodriguez</DestNombre>
-      <DestTipoDestino>FTP</DestTipoDestino>
-      <DestCorreo>anabelen.rodriguez@mss.es</DestCorreo>
-      <DestPath />
-      <DestSharedDriveHost />
-      <DestSharedDriveNombre />
-      <DestSharedDriveUsuario />
-      <DestSharedDriveContrasenya>tTSKgawYtn5Gfmo9zhXNs4FPAgXCq3CxNkd8fWI129HjDmfJQKBydQq9OUrn1E7M</DestSharedDriveContrasenya>
-      <DestFTPHost>192.168.0.47</DestFTPHost>
-      <DestFTPNombre>freelancers/anabelenrodriguez/PaT_NoBorrar</DestFTPNombre>
-      <DestFTPUsuario>miquelc</DestFTPUsuario>
-      <DestFTPContrasenya>tTSKgawYtn5Gfmo9zhXNs4FPAgXCq3CxNkd8fWI129GVZIvWUCpfZhQWYR+QaWufDJVJNZF7uGD1cQHD8aaxt8BhDxcvJrheANXd/lY2SvM=</DestFTPContrasenya>
-    </structDestino>
-    <structDestino>
-      <DestNombre>Concha_Espinosa</DestNombre>
-      <DestTipoDestino>FTP</DestTipoDestino>
-      <DestCorreo>mcespin@telefonica.net</DestCorreo>
-      <DestPath />
-      <DestSharedDriveHost />
-      <DestSharedDriveNombre />
-      <DestSharedDriveUsuario />
-      <DestSharedDriveContrasenya>4tZlrlA/6a6m/xagdR1y+ap6nNFqsUPN8jo9xNxwtY4=</DestSharedDriveContrasenya>
-      <DestFTPHost>ftp.mss.es</DestFTPHost>
-      <DestFTPNombre>conchaespinosa/PaT_NoBorrar</DestFTPNombre>
-      <DestFTPUsuario>miquelc</DestFTPUsuario>
-      <DestFTPContrasenya>4tZlrlA/6a6m/xagdR1y+daAhfel56Jkj14/aMoaBib4RFH6kgm+FH2/GKlRfY3PyLPapOJzbwYuoaQPS+cWXA==</DestFTPContrasenya>
-    </structDestino>
-    <structDestino>
-      <DestNombre>judit_Subirachs</DestNombre>
-      <DestTipoDestino>FTP</DestTipoDestino>
-      <DestCorreo>judit.subirachs@mss.es</DestCorreo>
-      <DestPath />
-      <DestSharedDriveHost />
-      <DestSharedDriveNombre />
-      <DestSharedDriveUsuario />
-      <DestSharedDriveContrasenya>o7yC7+7jZHYDEw2SMDB03uCpG1KbvmpIFd7SZqfbzKo=</DestSharedDriveContrasenya>
-      <DestFTPHost>ftp.mss.es</DestFTPHost>
-      <DestFTPNombre>freelancers/juditsubirachs/PaT_NoBorrar</DestFTPNombre>
-      <DestFTPUsuario>judits</DestFTPUsuario>
-      <DestFTPContrasenya>o7yC7+7jZHYDEw2SMDB03myyhYcsRbGvoPCsrxDX0S/KtOMFTxMi6oBBknCdxUwVEmNUgPx8oPf149GufjYoSQ==</DestFTPContrasenya>
-    </structDestino>
-    <structDestino>
-      <DestNombre>Marta_Vila-San-Juan</DestNombre>
-      <DestTipoDestino>FTP</DestTipoDestino>
-      <DestCorreo>martavsj@ono.com</DestCorreo>
-      <DestPath />
-      <DestSharedDriveHost />
-      <DestSharedDriveNombre />
-      <DestSharedDriveUsuario />
-      <DestSharedDriveContrasenya>JosgI6jeeyRe5FvXvuDd1BENz1zSAqEqIgiMAdyG1b5NEF4l3p0hCiiWmSYw5iZW</DestSharedDriveContrasenya>
-      <DestFTPHost>ftp.mss.es</DestFTPHost>
-      <DestFTPNombre>martavilasanjuan/PaT_NoBorrar</DestFTPNombre>
-      <DestFTPUsuario>miquelc</DestFTPUsuario>
-      <DestFTPContrasenya>JosgI6jeeyRe5FvXvuDd1BENz1zSAqEqIgiMAdyG1b5W9zahRro+3ol1yEAe7DGHagAxJJvvFWsRVog+DY/pZSWtqZkZx95w3eF+JBjfqHc=</DestFTPContrasenya>
-    </structDestino>
-    <structDestino>
-      <DestNombre>miguel_canals</DestNombre>
-      <DestTipoDestino>SHARED_DRIVE</DestTipoDestino>
-      <DestCorreo>miguelcanals@hotmail.com</DestCorreo>
-      <DestPath />
-      <DestSharedDriveHost />
-      <DestSharedDriveNombre>\\server\project1\ZZ-Pat_staging\miguelcanals</DestSharedDriveNombre>
-      <DestSharedDriveUsuario />
-      <DestSharedDriveContrasenya>a7/PMmFct4yDDjdRWzIkrN+UMM1qeuYD4GjBw0AiOWQ=</DestSharedDriveContrasenya>
-      <DestFTPHost />
-      <DestFTPNombre />
-      <DestFTPUsuario />
-      <DestFTPContrasenya>a7/PMmFct4yDDjdRWzIkrN+UMM1qeuYD4GjBw0AiOWQ=</DestFTPContrasenya>
-    </structDestino>
-    <structDestino>
-      <DestNombre>miguel_canals_DIR</DestNombre>
-      <DestTipoDestino>PATH</DestTipoDestino>
-      <DestCorreo>miguelcanals@hotmail.com</DestCorreo>
-      <DestPath>c:\U\tmp\ZZ-Pat\2mcanals\DIR</DestPath>
-      <DestSharedDriveHost />
-      <DestSharedDriveNombre />
-      <DestSharedDriveUsuario />
-      <DestSharedDriveContrasenya>a7/PMmFct4yDDjdRWzIkrMlAbsHhjv3EnwfJ8B7JWKGGUiDJkKDKik3wKjQVvGOa</DestSharedDriveContrasenya>
-      <DestFTPHost />
-      <DestFTPNombre />
-      <DestFTPUsuario />
-      <DestFTPContrasenya>a7/PMmFct4yDDjdRWzIkrMlAbsHhjv3EnwfJ8B7JWKGGUiDJkKDKik3wKjQVvGOa</DestFTPContrasenya>
-    </structDestino>
-    <structDestino>
-      <DestNombre>miguel_canals_SHAREDDRIVE</DestNombre>
-      <DestTipoDestino>SHARED_DRIVE</DestTipoDestino>
-      <DestCorreo>miguelcanals@hotmail.com</DestCorreo>
-      <DestPath>C:\U\tmp\ZZ-Pat\DIR</DestPath>
-      <DestSharedDriveHost />
-      <DestSharedDriveNombre>\\Lai22\u\tmp\ZZ-Pat\2mcanals\SHARED</DestSharedDriveNombre>
-      <DestSharedDriveUsuario />
-      <DestSharedDriveContrasenya>a7/PMmFct4yDDjdRWzIkrGAGn6rG3mYYXRbG+lTDUqY9Ls8Cx5YGJAt5qxJqFukOeoJ2yK1OE2seskbWY0XYSw==</DestSharedDriveContrasenya>
-      <DestFTPHost />
-      <DestFTPNombre />
-      <DestFTPUsuario />
-      <DestFTPContrasenya>a7/PMmFct4yDDjdRWzIkrGAGn6rG3mYYXRbG+lTDUqY9Ls8Cx5YGJAt5qxJqFukOeoJ2yK1OE2seskbWY0XYSw==</DestFTPContrasenya>
-    </structDestino>
-    <structDestino>
-      <DestNombre>miguelcanals_FTP</DestNombre>
-      <DestTipoDestino>FTP</DestTipoDestino>
-      <DestCorreo>miguelcanals@hotmail.com</DestCorreo>
-      <DestPath />
-      <DestSharedDriveHost />
-      <DestSharedDriveNombre />
-      <DestSharedDriveUsuario />
-      <DestSharedDriveContrasenya>F6c1HnSHb1PQigH18Y5vtRAYEncwwQvNC8qtSW2sFJasvQ1Crl0KbqSIF2QgU0vg</DestSharedDriveContrasenya>
-      <DestFTPHost>ftp.mss.es</DestFTPHost>
-      <DestFTPNombre>freelancers/miquelcanals/Pat</DestFTPNombre>
-      <DestFTPUsuario>miquelc</DestFTPUsuario>
-      <DestFTPContrasenya>F6c1HnSHb1PQigH18Y5vtRAYEncwwQvNC8qtSW2sFJYp/GOM0EOGF0aJt8/Z4jEhQKFvZhLZP2cHAOaLNXwDDA==</DestFTPContrasenya>
-    </structDestino>
-    <structDestino>
-      <DestNombre>olgaC</DestNombre>
-      <DestTipoDestino>PATH</DestTipoDestino>
-      <DestCorreo>olga.camprubi@mss.es</DestCorreo>
-      <DestPath>c:\U\tmp\ZZ-Pat\2mcanals\DIR</DestPath>
-      <DestSharedDriveHost />
-      <DestSharedDriveNombre />
-      <DestSharedDriveUsuario />
-      <DestSharedDriveContrasenya>8+QeDpd+pJUaGrNOmmoXJQ==</DestSharedDriveContrasenya>
-      <DestFTPHost />
-      <DestFTPNombre />
-      <DestFTPUsuario />
-      <DestFTPContrasenya>8+QeDpd+pJUaGrNOmmoXJQ==</DestFTPContrasenya>
-    </structDestino>
-    <structDestino>
       <DestNombre>traductor_ftp</DestNombre>
       <DestTipoDestino>FTP</DestTipoDestino>
-      <DestCorreo>miguelcanals@hotmail.com</DestCorreo>
+      <DestCorreo>XXXX@hotmail.com</DestCorreo>
       <DestPath />
       <DestSharedDriveHost />
       <DestSharedDriveNombre />
       <DestSharedDriveUsuario />
       <DestSharedDriveContrasenya>hAnU8xG89g2OPnit9+U4hwqYJFehehF/d++bv6Y6GYo=</DestSharedDriveContrasenya>
-      <DestFTPHost>ftp.mss.es</DestFTPHost>
+      <DestFTPHost>ftp.xx.xx</DestFTPHost>
       <DestFTPNombre>miquelcanals/Pat</DestFTPNombre>
-      <DestFTPUsuario>miquelc</DestFTPUsuario>
+      <DestFTPUsuario>xxxx</DestFTPUsuario>
       <DestFTPContrasenya>hAnU8xG89g2OPnit9+U4h0ZfS7fH1CMUfBTcaQAIb+95vLFam5Du2arYl9rXbdKx</DestFTPContrasenya>
     </structDestino>
   </ListaDestino>

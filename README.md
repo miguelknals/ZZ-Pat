@@ -30,6 +30,10 @@ More info at www.mknals.com or infomknals at gmail.com
 - Support for paths with blanks
 - PaT sent are logged in log.txt 
 
+2020-08-26
+
+- Add Project Manager to email sent to translator
+
 
 (C) 2020 miguel canals (http://www.mknals.com) MIT License
 

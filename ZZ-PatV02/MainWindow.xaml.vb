@@ -616,17 +616,18 @@ Class MainWindow
         ' voy a por el informe
         Dim sbSalidaMF As New StringBuilder("")
         Dim lin() As String = {
-            "PaT name: {0}" & nl,
-            "Due date: {0}" & nl,
+            "PaT naame: {0}" & nl,
+            "Project manager: {0}" & nl,
+            "Due daate: {0}" & nl,
             "Notes:" & nl & " {0}" & nl,
             "Folder references:" & nl & "{0}" & nl,
             "Base project references:" & nl & "{0}" & nl,
             "" & nl
            }
         Dim s As Integer = 0
-        lin(s) = String.Format(lin(s), ListaCarpetasTraducir.NombrePaT) : s += 1
-        ' necesitamos fecha
-
+        lin(s) = String.Format(lin(s), ListaCarpetasTraducir.NombrePaT) : s += 1 ' nombre Pat
+        lin(s) = String.Format(lin(s), ListaCarpetasTraducir.CorreoGestor) : s += 1 '
+        ' necesitamos fecha4
         Dim kk As String = ListaCarpetasTraducir.FechaEntrega.ToString("dd/MMM/yyyy")
         lin(s) = String.Format(lin(s), kk) : s += 1
         lin(s) = String.Format(lin(s), ListaCarpetasTraducir.Notas) : s += 1
@@ -2031,6 +2032,7 @@ Public Class ClaseListaCarpetasTraducir
         Dim nl As String = "<br>" & Environment.NewLine
         Dim lin() As String = {
             "<H2><b>PaT name:</b> {0}</H2>" & nl,
+            "<b>Project Manager:</b> {0}" & nl,
             "<b>Source PaT:</b> {0}" & nl,
             "<b>Target PaT:</b> ({0}) {1}" & nl & nl,
             "<b>Translator:</b> {0} ({1})" & nl & nl,
@@ -2039,6 +2041,7 @@ Public Class ClaseListaCarpetasTraducir
            }
         Dim s As Integer = 0
         lin(s) = String.Format(lin(s), Me.NombrePaT) : s += 1 ' Nombre de pat
+        lin(s) = String.Format(lin(s), Me.CorreoGestor) : s += 1 ' Nombre de pat
         ' necesitamos fecha        
         lin(s) = String.Format(lin(s), Source) : s += 1 ' Directorio gestor
         lin(s) = String.Format(lin(s), TipoDest, Target) : s += 1 ' (TipoDest) Target
