@@ -1118,10 +1118,11 @@ Class MainWindow
                     client.Credentials = credentials
 
                     Dim msg As New MailMessage
+                    msg.CC.Add(New MailAddress(Par.ParCorreoGestor))
                     msg.From = New MailAddress(mailusuario)
                     msg.To.Add(New MailAddress(destinatario))
                     Dim RtL As New List(Of MailAddress)
-                    msg.ReplyTo = New MailAddress("miguelcanals@hotmail.com")
+                    msg.ReplyTo = New MailAddress(Par.ParCorreoGestor)
                     msg.Subject = String.Format("PaT name: {0} / Recipient: {1}", Path.GetFileName(ArchivoMFT_HTML), destino.DestNombre)
                     msg.IsBodyHtml = "true"
 
@@ -1148,6 +1149,7 @@ Class MainWindow
                     msg.Body &= File.ReadAllText(ArchivoMFT_HTML)
                     ' log estÃ¡ en 
                     'Dim ArchivoLog As String = CargaCte("mantenimiento", "log")
+                    msg.Body = FixHTML(msg.Body) ' converts nls to entities
                     Dim datos As New Attachment(ArchivoMFT_HTML)
                     msg.Attachments.Add(datos)
 

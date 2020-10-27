@@ -151,6 +151,18 @@ Public Module ModuloRutPat2
 
         Return cipherText
     End Function
+    Public Function FixHTML(HTML As String) As String
+        Dim sb As New StringBuilder()
+        Dim s As Char() = HTML.ToCharArray()
+        For Each c As Char In s
+            If Convert.ToInt32(c) > 127 Then
+                sb.Append("&#" & Convert.ToInt32(c) & ";")
+            Else
+                sb.Append(c)
+            End If
+        Next
+        Return sb.ToString()
+    End Function
 
 
     Public Class ClassInfoOTM

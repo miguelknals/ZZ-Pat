@@ -1,11 +1,15 @@
-﻿Public Class VentanaResumen
+﻿Imports System.Text
+
+Public Class VentanaResumen
     Sub New(ContenidoHTML As String, EnvioCorreo As Boolean)
 
         ' This call is required by the designer.
         InitializeComponent()
 
+        ' FixHTML to convert to html entities
 
-        myWebBrowser.NavigateToString(ContenidoHTML)
+        myWebBrowser.NavigateToString(FixHTML(ContenidoHTML))
+
         If EnvioCorreo Then
             lblSendStatus.Content = "Email will be sent to the translator"
             lblSendStatus.FontWeight = FontWeights.Normal
