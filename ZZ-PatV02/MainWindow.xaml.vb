@@ -1450,7 +1450,7 @@ Class MainWindow
             'archivosalida = UCase(PathPrefijo & carpeta & ".CNT")
             archivosalida = archivo
             salida &= "CNT -> " & vbCrLf
-            mandato = "/TAsk=WORDCNT /FLD={0} /OUT={1} /OV=YES /OP={2} /QUIET=NOMSG"
+            mandato = "/TAsk=WORDCNT /FLD={0} /OUT={1} /OV=YES /OP={2} /QUIET=NOMSG /OPTIONS=DUPLICATE" ' check below for correct value extraction
             mandato = String.Format(mandato, carpeta, archivosalida, opcion)
             ejecuta(mandato, RC)
             ' Shell(mandato, AppWinStyle.MinimizedFocus, True, -1)
@@ -1487,7 +1487,7 @@ Class MainWindow
                 Next
                 ReDim Preserve ValColSal(LastNonEmpty)
                 ' actualizo 0 'Total' 1 Translated 2 Untraslated
-                contaje = Int(ValColSal(2))
+                contaje = Int(ValColSal(4)) ' note for duplicates 4 for normal wct is 2
                 salida &= contaje.ToString() & vbCrLf
 
             End If

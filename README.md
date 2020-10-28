@@ -16,6 +16,10 @@ More info at www.mknals.com or infomknals at gmail.com
 
 2020-10-27
 
+- Wordcount (CNT) is now with duplicates
+
+2020-10-27
+
 - Fixing email issues (now sends cc to PM when email sent to translator)
 - FixHTML in order to avoid nls garbage in browser and emai.
 
