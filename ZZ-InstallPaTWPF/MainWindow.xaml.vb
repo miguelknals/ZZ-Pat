@@ -234,7 +234,7 @@ Class MainWindow
                         FTPSolicitud.KeepAlive = False
                     End If
                     ' end secure
-
+                    Dim lista As New List(Of String) ' here I will safe al pats I could find
                     FTPRespuesta = CType(FTPSolicitud.GetResponse, FtpWebResponse)
                     StreamFTPRespuesta = FTPRespuesta.GetResponseStream
                     AnyadetxtSalida("We will read ftp directory..." & nl)
@@ -242,20 +242,84 @@ Class MainWindow
                     While ReaderStreamFTPRespuesta.Peek >= 0
                         auxS = ReaderStreamFTPRespuesta.ReadLine
                         If UCase(auxS).EndsWith(".PAT.ZIP") Then
-                            ' lista.Add(auxS) : Exit While
-                            auxS = Path.GetFileName(auxS) ' por si sale con el path
-                            NombrePaTconPath = auxS : Exit While
+                            lista.Add(auxS) ' add al pats.
+                            'auxS = Path.GetFileName(auxS) ' por si sale con el path
+                            'NombrePaTconPath = auxS : Exit While
                         End If
                     End While
+                    '
                     'Console.WriteLine("Directory List Complete, status {0}", FTPRespuesta.StatusDescription)
                     AnyadetxtSalida(String.Format("Done (status {0}", FTPRespuesta.StatusDescription) & nl)
                     ReaderStreamFTPRespuesta.Close()
                     FTPRespuesta.Close()
+
+                    '
+                    '
+                    Dim boolProcess As Boolean = False
+                    If lista.Count() > 0 Then boolProcess = True
+                    While boolProcess
+                        Dim vproceso As New VentanaPreproceso(lista)
+                        vproceso.ShowDialog()
+                        auxS = vproceso.Resultado
+                        Select Case vproceso.Resultado
+                            Case "Cancel", ""
+                                boolProcess = False
+                                NombrePaTconPath = ""
+                                AnyadetxtSalida("User has canceled PaT importation" & nl)
+                            Case "Continue"
+                                boolProcess = False
+                                NombrePaTconPath = vproceso.currentPat
+                                AnyadetxtSalida("User goes ahead with " & NombrePaTconPath)
+                            Case "Delete"
+                                ftpURI = "ftp://" & par.DestFTPHost & "/" & par.DestFTPNombre & "/" ' si no añado / al final me sale el subdir
+                                NombrePaTconPath = vproceso.currentPat
+                                NombrePat = Path.GetFileName(NombrePaTconPath)
+                                Try
+                                    ftpURI &= NombrePat
+                                    FTPSolicitud = DirectCast(WebRequest.Create(New Uri(ftpURI)), FtpWebRequest)
+                                    FTPSolicitud.Credentials = ftpCrendenciales
+                                    FTPSolicitud.Method = WebRequestMethods.Ftp.DeleteFile
+                                    'secure
+                                    If TIPO_FTP = "FTPES" Then
+                                        FTPSolicitud.EnableSsl = True
+                                        FTPSolicitud.KeepAlive = False
+                                    End If
+                                    ' end secure
+                                    Dim respuesta = DirectCast(FTPSolicitud.GetResponse(), FtpWebResponse)
+
+                                Catch ex As System.Net.WebException
+                                    AnyadetxtSalida("FTP ERROR *.PaT.zip " & nl)
+                                    AnyadetxtSalida(ex.Message)
+                                    If Not (ex.InnerException Is Nothing) Then
+                                        AnyadetxtSalida(ex.InnerException.Message)
+                                    End If
+                                    Exit Sub
+                                End Try
+                                ' arriving here we have delete de Pat in ftp server
+                                MsgBox("PaT file sucessfully delete: " & NombrePaTconPath,
+                                       MsgBoxStyle.Information, "PaT deleted")
+                                lista.RemoveAt(vproceso.currentPatindex)
+                                '
+                                If lista.Count() = 0 Then
+                                    boolProcess = False
+                                    NombrePaTconPath = ""
+                                    AnyadetxtSalida("No remainig PaT" & nl)
+                                End If
+                        End Select
+                    End While
+
+
+
+
+
+
+
+
                     ' ahora lo bajaré al directorio temporal si tengo uno
                     If NombrePaTconPath <> "" Then
                         'ftpURI = "ftp://" & par.DestFTPHost & "/" & par.DestFTPNombre & "/" ' si no añado / al final me sale el subdir
-                        ftpURI &= auxS ' ftpuri tiene ahora el nombre del archivo a bajar
-                        Dim archivolocal As String = DirTMP & "\" & auxS
+                        ftpURI &= NombrePaTconPath ' ftpuri tiene ahora el nombre del archivo a bajar
+                        Dim archivolocal As String = DirTMP & "\" & NombrePaTconPath
                         FTPSolicitud = CType(System.Net.FtpWebRequest.Create(ftpURI), System.Net.FtpWebRequest)
                         FTPSolicitud.Credentials = ftpCrendenciales
                         FTPSolicitud.KeepAlive = True
@@ -1012,7 +1076,7 @@ Class MainWindow
             carpeta = row("carpeta")
             mandato = " /TAsk=FLDEXP /FLD={0} /TOdrive={1} /ToPath={2} /OPtions=(MEM,ROMEM,DOCMEM) /OVerwrite=YES /QUIET=NOMSG  "
             mandato = String.Format(mandato, carpeta, unidad, DirTemporalSinUnidad) ' exportaré al directorio temporal
-            ejecuta(mandato, auxi)
+            ejecuta(mandato, rc)
             If rc <> 0 Then
                 auxS = "Folder " & carpeta & " cannot be exported in directory " & DirTMP & ". " &
                        "RC=" & rc.ToString

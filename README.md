@@ -14,6 +14,10 @@ More info at www.mknals.com or infomknals at gmail.com
 
 # Changes
 
+2020-11-09
+
+- Changes in the ZZ-InstallPaTWPF. Some level of control in FTP PaT files before loading.
+
 2020-10-27
 
 - Wordcount (CNT) is now with duplicates

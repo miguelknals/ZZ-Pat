@@ -1,0 +1,21 @@
+﻿<Window x:Class="VentanaPreproceso"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ZZ_InstallPaTWPF"
+        mc:Ignorable="d"
+        Title="PaT Process " Height="270" Width="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+
+        </Grid.ColumnDefinitions>
+        <Label x:Name="lblInfo01" Content="Label" HorizontalAlignment="Left" Margin="49,6,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lblInfo02" Content="Label" HorizontalAlignment="Left" Margin="47,133,0,0" VerticalAlignment="Top" FontSize="20"/>
+        <Button x:Name="btnContinue" Content="Continue with this PaT" HorizontalAlignment="Left" Margin="47,190,0,0" VerticalAlignment="Top" Width="167"/>
+        <Button x:Name="btnNext" Content="Switch to next PaT" HorizontalAlignment="Left" Margin="237,190,0,0" VerticalAlignment="Top" Width="136"/>
+        <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Left" Margin="403,190,0,0" VerticalAlignment="Top" Width="74" RenderTransformOrigin="4.149,0.773"/>
+        <Button x:Name="btnDelete" Content="Delete this PaT" HorizontalAlignment="Left" Margin="506,190,0,0" VerticalAlignment="Top" Width="112"/>
+
+    </Grid>
+</Window>
