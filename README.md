@@ -14,6 +14,11 @@ More info at www.mknals.com or infomknals at gmail.com
 
 # Changes
 
+2020-11-13
+
+- Changes in the PO text sent to translator after process in PM machine.
+
+
 2020-11-09
 
 - Changes in the ZZ-InstallPaTWPF. Some level of control in FTP PaT files before loading.

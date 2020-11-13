@@ -694,6 +694,12 @@ continua_sin_traductor:
                     "<HTML><BODY>",
                     String.Format("PaT Purchase Order. PLEASE SEND YOUR TO {0} INVOICE WITH THIS NOTE.", ListaCarpetasTraducir.CorreoGestor),
                     "Pat recipient: " & destino.DestNombre}
+            lin2 = {"<HTML><BODY>",
+                    String.Format("PaT Purchase Order. THIS IS FOR YOUR INFORMATION ONLY. This is an optional email you can receive in order to:<br>"),
+                    String.Format("1) Receive counting information. Ask you provider about the ACTUAL invoicing process. "),
+                    String.Format("2) The PM wants to inform you he/she has download and process the PAT."),
+                    String.Format("PM: {0} ", ListaCarpetasTraducir.CorreoGestor),
+                    "Pat recipient: " & destino.DestNombre}
             For s = 0 To lin2.Count - 1
                 msg.Body &= lin2(s) & "<br>"
             Next

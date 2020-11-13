@@ -10,7 +10,7 @@
         <Label Content="1) Drag and drop a PaT MF File:
                " HorizontalAlignment="Left" Margin="10,17,0,0" VerticalAlignment="Top"/>
         <CheckBox x:Name="chkImportar" Content="Import folders in current OpenTM2 environment" HorizontalAlignment="Left" Height="17" Margin="175,45,0,0" VerticalAlignment="Top" Width="330" IsChecked="True"/>
-        <CheckBox x:Name="chkCorreo" Content="Send email with PO to translator" HorizontalAlignment="Left" Height="17" Margin="175,67,0,0" VerticalAlignment="Top" Width="330"/>
+        <CheckBox x:Name="chkCorreo" Content="Send email to translator as ack and/or counting and invoicing info" HorizontalAlignment="Left" Height="17" Margin="175,67,0,0" VerticalAlignment="Top" Width="430"/>
         <CheckBox x:Name="chkTengoTodo" Content="Every thing ZZ-Pat needs (translated folder(s)) is on the MFT directory. ZZ-Pat will not try to retrevive any folder from the repository." HorizontalAlignment="Left" Height="17" Margin="175,88,0,0" VerticalAlignment="Top" Width="679"/>
         <CheckBox x:Name="chkContajeAdicional" Content="Try to end folders with IBM official profiles if available" HorizontalAlignment="Left" Height="17" Margin="175,112,0,0" VerticalAlignment="Top" Width="489" IsChecked="True"/>
 

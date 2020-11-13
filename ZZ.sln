@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "ZZ-Test", "ZZ-Test\ZZ-Test.vbproj", "{1F27567A-F6E5-4D68-8EAE-DEC9A77BEEB1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,18 @@ Global
 		{15422F1D-9657-43C1-88E7-42E383E9042E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{15422F1D-9657-43C1-88E7-42E383E9042E}.Release|x86.ActiveCfg = Release|Any CPU
 		{15422F1D-9657-43C1-88E7-42E383E9042E}.Release|x86.Build.0 = Release|Any CPU
+		{1F27567A-F6E5-4D68-8EAE-DEC9A77BEEB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F27567A-F6E5-4D68-8EAE-DEC9A77BEEB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F27567A-F6E5-4D68-8EAE-DEC9A77BEEB1}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{1F27567A-F6E5-4D68-8EAE-DEC9A77BEEB1}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{1F27567A-F6E5-4D68-8EAE-DEC9A77BEEB1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1F27567A-F6E5-4D68-8EAE-DEC9A77BEEB1}.Debug|x86.Build.0 = Debug|Any CPU
+		{1F27567A-F6E5-4D68-8EAE-DEC9A77BEEB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F27567A-F6E5-4D68-8EAE-DEC9A77BEEB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F27567A-F6E5-4D68-8EAE-DEC9A77BEEB1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{1F27567A-F6E5-4D68-8EAE-DEC9A77BEEB1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{1F27567A-F6E5-4D68-8EAE-DEC9A77BEEB1}.Release|x86.ActiveCfg = Release|Any CPU
+		{1F27567A-F6E5-4D68-8EAE-DEC9A77BEEB1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
