@@ -14,6 +14,11 @@ More info at www.mknals.com or infomknals at gmail.com
 
 # Changes
 
+2021-02-01
+
+- Now after downloading and processing a pat, some FXP are zipped or cleaned. Also fxz is 
+renamed after translator user.  
+
 2020-11-13
 
 - Changes in the PO text sent to translator after process in PM machine.
