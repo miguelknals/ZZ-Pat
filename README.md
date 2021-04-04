@@ -14,6 +14,11 @@ More info at www.mknals.com or infomknals at gmail.com
 
 # Changes
 
+2021-04-04
+
+- Support added for stpf with ssh.net
+
+
 2021-02-01
 
 - Now after downloading and processing a pat, some FXP are zipped or cleaned. Also fxz is 
