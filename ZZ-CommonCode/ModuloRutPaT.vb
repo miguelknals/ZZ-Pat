@@ -2,6 +2,9 @@
 Imports System.Xml
 Imports System.Xml.Serialization
 Imports System.IO
+Imports Renci.SshNet
+Imports Renci.SshNet.Sftp
+
 Public Module ModuloRutPaT 'Public de lo contrario serializer no me va.
     Public Class TestEnCommon
         Sub New(nombre As String)
@@ -221,8 +224,6 @@ Public Module ModuloRutPaT 'Public de lo contrario serializer no me va.
             Return todoOK
         End Function
     End Class
- 
-
 
 
     Sub mandatoZip(mandato As String, ByRef procEC As Integer, Optional ByRef dirTra As String = "")

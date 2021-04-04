@@ -12,7 +12,7 @@ Imports System.Data
 '
 Imports System.Net
 Imports System.Net.Mail
-
+Imports System.Threading.Tasks
 
 Class MainWindow
     Dim nl As String = Environment.NewLine
@@ -106,8 +106,11 @@ Class MainWindow
         Dim DirOutPatconPat As String ' 
         Dim DirTMP As String
         Dim DirEjeucion As String
+        Dim PaTSize As ULong
         ' 
+
         NombrePaTconPath = ""
+        PaTSize = 0
         NombrePatsinExtension = ""
         NombrePat = ""
         DirOutPat = ""
@@ -269,7 +272,7 @@ Class MainWindow
                             Case "Continue"
                                 boolProcess = False
                                 NombrePaTconPath = vproceso.currentPat
-                                AnyadetxtSalida("User goes ahead with " & NombrePaTconPath)
+                                AnyadetxtSalida("User goes ahead with " & NombrePaTconPath & nl)
                             Case "Delete"
                                 ftpURI = "ftp://" & par.DestFTPHost & "/" & par.DestFTPNombre & "/" ' si no añado / al final me sale el subdir
                                 NombrePaTconPath = vproceso.currentPat
@@ -307,12 +310,6 @@ Class MainWindow
                                 End If
                         End Select
                     End While
-
-
-
-
-
-
 
 
                     ' ahora lo bajaré al directorio temporal si tengo uno
@@ -371,9 +368,178 @@ Class MainWindow
                     End If
                     Exit Sub
                 End Try
+            Case "SFTP"
+                ' first read directory
+                Dim TIPO_FTP = par.DestTipoDestino ' SFTP
+                AnyadetxtSalida(TIPO_FTP & nl)
+                Dim Contrasenya As String = DecryptWithKey(par.DestFTPContrasenya, par.DestLongInterno)
+
+                Dim posicolon As Integer = InStr(par.DestFTPHost, ":")
+                Dim sftpport As Integer = 22
+                Dim sftphost As String = par.DestFTPHost
+                If posicolon <> 0 Then
+                    sftpport = CType(sftphost.Substring(posicolon, Len(sftphost) - posicolon), Integer)
+                    sftphost = sftphost.Substring(0, posicolon - 1)
+                End If
+
+                auxS &= "Trying to connect to: " & par.DestFTPHost & nl
+                AnyadetxtSalida(auxS)
+
+
+                Dim SFTPDirDirectory As strucSFTPSFTPDirDirectory = New strucSFTPSFTPDirDirectory(
+                        sftphost, sftpport, par.DestFTPUsuario, Contrasenya, par.DestFTPNombre
+                        )
+
+                SFTPDirDirectory = ReadMyDirectory(SFTPDirDirectory)
+                Dim lista As New List(Of String) ' here I will safe al pats I could find
+
+
+                If Not SFTPDirDirectory.todoOk Then
+                    auxS = "Fatal error reading ftpdir." & nl
+                    auxS = "Dir -> " & par.DestFTPHost & nl
+                    auxS &= "info -> " & SFTPDirDirectory.salida & nl
+                    AnyadetxtSalida(auxS)
+                    auxI = MsgBox(auxS, MsgBoxStyle.Critical, "OMG sftp read dir error ...")
+                    Exit Sub
+                End If
+
+                For Each infofile In SFTPDirDirectory.filelist
+                    auxS = infofile.filename
+                    If UCase(auxS).EndsWith(".PAT.ZIP") Then
+                        lista.Add(auxS) ' add al pats.
+                    End If
+                Next
+
+                AnyadetxtSalida(String.Format("Done sftp read dir (status {0})", SFTPDirDirectory.salida) & nl)
+
+                Dim boolProcess As Boolean = False
+                If lista.Count() > 0 Then boolProcess = True
+                While boolProcess
+                    Dim vproceso As New VentanaPreproceso(lista)
+                    vproceso.ShowDialog()
+                    auxS = vproceso.Resultado
+                    Select Case vproceso.Resultado
+                        Case "Cancel", ""
+                            boolProcess = False
+                            NombrePaTconPath = ""
+                            AnyadetxtSalida("User has canceled PaT importation" & nl)
+                        Case "Continue"
+                            boolProcess = False
+                            NombrePaTconPath = vproceso.currentPat
+                            AnyadetxtSalida("User goes ahead with " & NombrePaTconPath & nl)
+                        Case "Delete"
+                            boolProcess = True ' aunque borres seguimos en el bucle
+                            NombrePaTconPath = vproceso.currentPat
+                            Dim file2delete As String
+                            file2delete = par.DestFTPNombre
+                            If Not file2delete.EndsWith("/") Then file2delete &= "/"
+                            file2delete &= NombrePaTconPath
+
+                            Dim SFTPDeleteFile As strucSFTPDeleteFile = New strucSFTPDeleteFile(
+                                sftphost, sftpport, par.DestFTPUsuario, Contrasenya, file2delete
+                                )
+
+                            SFTPDeleteFile = DeleteMyFile(SFTPDeleteFile)
+
+                            If Not SFTPDeleteFile.todoOk Then
+                                auxS = "Fatal error cannot delete ftpdir: " & nl
+                                auxS &= file2delete & nl
+                                auxS &= "info -> " & SFTPDeleteFile.salida & nl
+                                AnyadetxtSalida(auxS)
+                                auxI = MsgBox(auxS, MsgBoxStyle.Critical, "OMG sftp delete PAT error ...")
+                                Exit Sub
+                            End If
+
+                            auxS = "File deleted: " & file2delete & nl
+                            AnyadetxtSalida(auxS)
+
+
+                            ' arriving here we have delete de Pat in ftp server
+                            MsgBox("PaT file sucessfully delete: " & NombrePaTconPath,
+                                       MsgBoxStyle.Information, "PaT deleted")
+                            lista.RemoveAt(vproceso.currentPatindex)
+
+                            '
+                            If lista.Count() = 0 Then
+                                boolProcess = False
+                                NombrePaTconPath = ""
+                                AnyadetxtSalida("No remainig PaT" & nl)
+                            End If
+                    End Select
+                End While
+
+
+                ' ahora lo bajaré al directorio temporal si tengo uno
+                If NombrePaTconPath <> "" Then
+                    ' I will search for its size in the direectory info list
+                    For Each infofile In SFTPDirDirectory.filelist
+                        auxS = infofile.filename
+                        If auxS = NombrePaTconPath Then
+                            PaTSize = infofile.filesize
+                            Exit For
+                        End If
+                    Next
+
+                    'ftpURI = "ftp://" & par.DestFTPHost & "/" & par.DestFTPNombre & "/" ' si no añado / al final me sale el subdir
+                    Dim target As String = DirTMP
+                    If Not target.EndsWith("/") Then target &= "/"
+                    target &= NombrePaTconPath
+                    Dim source As String = par.DestFTPNombre
+                    If Not source.EndsWith("/") Then source &= "/"
+                    source &= NombrePaTconPath
+                    Dim SFTPDownloadFile As strucSFTPDownloadFile = New strucSFTPDownloadFile(
+                                sftphost, sftpport, par.DestFTPUsuario, Contrasenya, target, source
+                                )
+                    ' for debut KKK is  SFTPDownloadFile = KKK(SFTPDownloadFile)
+
+                    Try
+                        Dim tsk As Task(Of strucSFTPDownloadFile) = Task.Run(Function() DownloadMyFile(SFTPDownloadFile))
+                        Dim MaxSize As Long = PaTSize
+                        Dim lastpercentage As Integer = -1
+                        Dim porcentage As Integer = 0
+                        GlobalSize = 0 ' iniciamos contador.
+                        While Not tsk.IsCompleted
+                            Threading.Thread.Sleep(1000) ' cada segundo
+                            porcentage = 100 * GlobalSize / MaxSize
+                            If porcentage <> lastpercentage Then
+                                AnyadetxtSalida(String.Format("Transfered... {0} % ({1}) Kbytes ", porcentage, Int(GlobalSize / 1024)) & nl)
+                                lastpercentage = porcentage
+                            End If
+                        End While
+                        AnyadetxtSalida("File downloaded" & nl)
+
+
+
+                        If Not SFTPDownloadFile.todoOk Then
+                            auxS = "Fatal error cannot download PAT file (inner loop): " & nl
+                            auxS &= "source -> " & SFTPDownloadFile.ftpfile & nl
+                            auxS &= "target -> " & SFTPDownloadFile.localfile & nl
+                            auxS &= "info   -> " & SFTPDownloadFile.salida & nl
+                            AnyadetxtSalida(auxS)
+                            auxI = MsgBox(auxS, MsgBoxStyle.Critical, "OMG sftp download PAT error (inner loop)...")
+                            Exit Sub
+                        End If
+
+                    Catch ex As Exception
+                        auxS = "Fatal error cannot download PAT file (outer loop): " & nl
+                        auxS &= "source -> " & SFTPDownloadFile.ftpfile & nl
+                        auxS &= "target -> " & SFTPDownloadFile.localfile & nl
+                        AnyadetxtSalida(auxS)
+                        auxI = MsgBox(auxS, MsgBoxStyle.Critical, "OMG sftp download PAT error  (outer loop)...")
+                        Exit Sub
+
+                    End Try
+
+                    auxS = "File download: " & SFTPDownloadFile.localfile & nl
+                    AnyadetxtSalida(auxS)
+                    NombrePaTconPath = target
+
+                    ' debug 
+
+                End If
 
             Case Else
-                auxS = String.Format("Target type is '{0}'. It should be PATH, SHARED_DRIVE or FTP.", TipoDeposito)
+                auxS = String.Format("Target type is '{0}'. It should be PATH, SHARED_DRIVE, FTP, FTPES or SFPT.", TipoDeposito)
                 AnyadetxtSalida(auxS & nl)
                 auxS &= nl & "Do you want to exit the program?"
 
@@ -383,13 +549,13 @@ Class MainWindow
                     Application.Current.Shutdown()
                 End If
         End Select
+
+
+
         If NombrePaTconPath = "" Then
             AnyadetxtSalida("There are not PaT file to process")
             Exit Sub
         End If
-
-
-
         AnyadetxtSalida(nl & nl & "**********************************************************" & nl)
 
         AnyadetxtSalida("  PAT FOUND " & nl)
@@ -548,9 +714,9 @@ Class MainWindow
         If ListaCarpetasTraducir.FlagAutoInstall = False Then ' pregunto
             ' antes de ponerme a trabajar voy a avisar
             auxS = "New PaT File!" & nl & nl
-            If par.DestTipoDestino = "FTP" Or par.DestTipoDestino = "FTPES" Then
+            If par.DestTipoDestino = "FTP" Or par.DestTipoDestino = "FTPES" Or par.DestTipoDestino = "SFTP" Then
                 auxS &= String.Format("We have find in the ftp server {0} ", par.DestFTPHost) & nl
-                auxS &= String.Format("The file has downloaded as {0}", NombrePaTconPath) & nl & nl
+                auxS &= String.Format("The file has been downloaded as {0}", NombrePaTconPath) & nl & nl
             Else
                 auxS &= String.Format("There is a new PaT file {0}", NombrePaTconPath) & nl & nl
             End If
@@ -560,13 +726,15 @@ Class MainWindow
             auxS &= "- Folders will be imported in OTM2." & nl
             auxS &= String.Format("- All material will be also in the {0} directory ", DirOutPatconPat) & nl & nl
             Select Case par.DestTipoDestino
-                Case "FTP", "FTPES"
+                Case "FTP", "FTPES", "SFTP"
                     auxS &= "If you wanto to manually process this PaT file:" & nl
                     auxS &= String.Format("1) Go to the ftp host and directory: {0}{0}{1}/{2}{0}{0} ", nl, par.DestFTPHost, par.DestFTPNombre)
                     auxS &= String.Format("2) DOWNLOAD and REMOVE the incoming PaT file: {0}{0}{1}{0}{0} and place it in another directory.{0}", nl, NombrePat)
                     auxS &= "3) Unzip all files manually at your convenience." & nl
                     auxS &= "4) Say 'No' and dismiss this dialog." & nl & nl
-                    auxS &= "Note: If you NOT remove the PaT file from the ftp directoy ZZ-Pat will try to download and process it again." & nl & nl
+                    auxS &= "Note: In order to run the MANUAL process you need to know the userid and pwd. Ask your admin if you dont have it." & nl & nl
+                    auxS &= "Note: In any MANUAL process, if you NOT remove the PaT file from the ftp directoy ZZ-Pat will try to download and process it again." & nl & nl
+
 
                 Case Else
                     auxS &= "If you wanto to manually process this PaT file:" & nl
@@ -583,7 +751,7 @@ Class MainWindow
             auxI = MessageBox.Show(auxS, "Do we unpackage the PaT file? ", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes)
             If auxI = MsgBoxResult.No Then
                 Select Case par.DestTipoDestino
-                    Case "FTP", "FTPES"
+                    Case "FTP", "FTPES", "SFTP"
                         auxS = "Again, new remainder, if you have not, pls remove the PaT file: {0}{0}{1}{0}{0} from {0}{0}{2}/{3}{0}{0}  otherwise you continually receive this message.{0} "
                         auxS = String.Format(auxS, nl, NombrePat, par.DestFTPHost, par.DestFTPNombre)
                     Case Else
@@ -735,7 +903,8 @@ Class MainWindow
             End Try
         End If
         Dim NombrePaTenWIP As String = DirWIP & "\" & NombrePat
-        If TipoDeposito = "PATH" Or TipoDeposito = "SHARED_DRIVE" Or TipoDeposito = "FTP" Or TipoDeposito = "FTPES" Then
+        If TipoDeposito = "PATH" Or TipoDeposito = "SHARED_DRIVE" Or TipoDeposito = "FTP" Or
+            TipoDeposito = "FTPES" Or TipoDeposito = "SFTP" Then
             Try
                 If File.Exists(NombrePaTenWIP) Then
                     File.Delete(NombrePaTenWIP) ' lo borro si existe el move, no tiene overwrite
@@ -801,6 +970,42 @@ Class MainWindow
                     End If
                     Exit Sub
                 End Try
+            Case "SFTP"
+                Dim TIPO_FTP As String = TipoDeposito
+                Dim Contrasenya As String = DecryptWithKey(par.DestFTPContrasenya, par.DestLongInterno)
+
+                Dim posicolon As Integer = InStr(par.DestFTPHost, ":")
+                Dim sftpport As Integer = 22
+                Dim sftphost As String = par.DestFTPHost
+                If posicolon <> 0 Then
+                    sftpport = CType(sftphost.Substring(posicolon, Len(sftphost) - posicolon), Integer)
+                    sftphost = sftphost.Substring(0, posicolon - 1)
+                End If
+                Dim file2delete As String
+                file2delete = par.DestFTPNombre
+                If Not file2delete.EndsWith("/") Then file2delete &= "/"
+                file2delete &= NombrePat
+
+                Dim SFTPDeleteFile As strucSFTPDeleteFile = New strucSFTPDeleteFile(
+                            sftphost, sftpport, par.DestFTPUsuario, Contrasenya, file2delete
+                            )
+
+                SFTPDeleteFile = DeleteMyFile(SFTPDeleteFile)
+
+                If Not SFTPDeleteFile.todoOk Then
+                    Dim auxS2 As String = String.Format("Warning: We have not been able to delete download pat -> {0} ", file2delete) & nl
+                    auxS2 &= "Pat will be correctly installed, but now deleted from the server. " & nl
+                    auxS2 &= "Delete the PAT file in the server and warn your admin." & nl
+                    auxS2 &= "Error -> " & SFTPDeleteFile.salida & nl
+                    auxI = MsgBox(auxS2, MsgBoxStyle.Information, "OMG file in use...")
+                    AnyadetxtSalida(auxS2)
+                End If
+
+
+
+
+
+
             Case "PATH" ' no hago nada
             Case "SHARED_DRIVE" ' no hago nada
             Case Else
@@ -817,7 +1022,7 @@ Class MainWindow
         auxS = "PaT file succesfully instaled!"
         AnyadetxtSalida(auxS & nl)
         If ListaCarpetasTraducir.FlagAutoInstall = False Then
-            MsgBox(auxS, MsgBoxStyle.Information, "PaT succesfully instaled!")
+            MsgBox(auxS, MsgBoxStyle.Information, "PaT succesfully instaled!" & nl)
         End If
 
         AnyadetxtSalida("Process finished successfully. Returning to the main loop " & nl)
@@ -891,7 +1096,7 @@ Class MainWindow
         vp.ShowDialog()
         ' debo cargar los parámetros
         Dim Par As structParametros
-        Par = cargaParametros()
+        Par = CargaParametros()
         ' dt.Start() : AnyadetxtSalida("Timer restarted.")
 
     End Sub
@@ -1138,6 +1343,53 @@ Class MainWindow
                 ' ahora lo copio
                 File.Copy(auxFileSource, auxFileTarget)
                 AnyadetxtSalida("Done!" & nl)
+            ElseIf par.DestTipoDestino = "SFTP" Then
+                Contrasenya = DecryptWithKey(par.DestFTPContrasenya, par.DestLongInterno)
+                Dim posicolon As Integer = InStr(par.DestFTPHost, ":")
+                Dim sftpport As Integer = 22
+                Dim sftphost As String = par.DestFTPHost
+                If posicolon <> 0 Then
+                    sftpport = CType(sftphost.Substring(posicolon, Len(sftphost) - posicolon), Integer)
+                    sftphost = sftphost.Substring(0, posicolon - 1)
+                End If
+                Dim source As String = auxFileSource
+                ' hostFTP y target calculados al principio
+                Dim target As String = par.DestFTPNombre
+                If Not target.EndsWith("/") Then target &= "/"
+                target &= carpeta & ".FXZ" ' destino FTP
+
+
+                Dim SFTPUploadFile As strucSFTPUploadFile = New strucSFTPUploadFile(
+                                sftphost, sftpport, par.DestFTPUsuario, Contrasenya, source, target
+                                )
+                ' para debug UploadMyFile(SFTPUploadFile)
+                Dim tsk As Task(Of strucSFTPUploadFile) = Task.Run(Function() UploadMyFile(SFTPUploadFile))
+                Dim MaxSize As Long = New FileInfo(source).Length
+                Dim lastpercentage As Integer = -1
+                Dim porcentage As Integer = 0
+                GlobalSize = 0
+                While Not tsk.IsCompleted
+                    Threading.Thread.Sleep(1000) ' cada segundo
+                    porcentage = 100 * GlobalSize / MaxSize
+                    If porcentage <> lastpercentage Then
+                        AnyadetxtSalida(String.Format("Transfered... {0} % ({1}) Kbytes ", porcentage, Int(GlobalSize / 1024)) & nl)
+                        lastpercentage = porcentage
+                    End If
+                End While
+                SFTPUploadFile = tsk.Result
+                If Not SFTPUploadFile.todoOk Then
+                    auxS = "Folder cannot be upload to the sftp server. " & nl
+                    auxS &= SFTPUploadFile.salida & nl
+                    auxS &= "source ->  " & source & nl
+                    auxS &= "target ->  " & target & nl
+                    auxS &= nl
+                    MsgBox(auxS, MsgBoxStyle.Exclamation, "Fatal FTP Error." & nl)
+                    txtSalida.AppendText(auxS & nl)
+                    Exit Sub
+                End If
+                AnyadetxtSalida(String.Format("Foldert {0} sent!", carpeta) & nl)
+
+
 
             ElseIf par.DestTipoDestino = "FTP" Or par.DestTipoDestino = "FTPES" Then '  debo conectarme y copiar desde el temporal al destino
                 Dim TIPO_FTP = par.DestTipoDestino
@@ -1238,6 +1490,56 @@ Class MainWindow
             ' ahora lo copio con overwrite
             File.Copy(auxFileSource, auxFileTarget, True)
             AnyadetxtSalida("Done!" & nl)
+        ElseIf par.DestTipoDestino = "SFTP" Then
+            Dim TIPO_FTP = par.DestTipoDestino
+            Contrasenya = DecryptWithKey(par.DestFTPContrasenya, par.DestLongInterno)
+            Dim posicolon As Integer = InStr(par.DestFTPHost, ":")
+            Dim sftpport As Integer = 22
+            Dim sftphost As String = par.DestFTPHost
+            If posicolon <> 0 Then
+                sftpport = CType(sftphost.Substring(posicolon, Len(sftphost) - posicolon), Integer)
+                sftphost = sftphost.Substring(0, posicolon - 1)
+            End If
+            Dim source As String = auxFileSource
+            ' hostFTP y target calculados al principio
+            Dim target As String = par.DestFTPNombre
+            If Not target.EndsWith("/") Then target &= "/"
+            target &= archivoMFT
+
+
+            Dim SFTPUploadFile As strucSFTPUploadFile = New strucSFTPUploadFile(
+                                sftphost, sftpport, par.DestFTPUsuario, Contrasenya, source, target
+                                )
+            ' para debug UploadMyFile(SFTPUploadFile)
+            Dim tsk As Task(Of strucSFTPUploadFile) = Task.Run(Function() UploadMyFile(SFTPUploadFile))
+            Dim MaxSize As Long = New FileInfo(source).Length
+            Dim lastpercentage As Integer = -1
+            Dim porcentage As Integer = 0
+            GlobalSize = 0
+            While Not tsk.IsCompleted
+                Threading.Thread.Sleep(1000) ' cada segundo
+                porcentage = 100 * GlobalSize / MaxSize
+                If porcentage <> lastpercentage Then
+                    AnyadetxtSalida(String.Format("Transfered... {0} % ({1}) Kbytes ", porcentage, Int(GlobalSize / 1024)) & nl)
+                    lastpercentage = porcentage
+                End If
+            End While
+            SFTPUploadFile = tsk.Result
+            If Not SFTPUploadFile.todoOk Then
+                auxS = "Manifest cannot be upload to the sftp server. " & nl
+                auxS &= SFTPUploadFile.salida & nl
+                auxS &= "source ->  " & source & nl
+                auxS &= "target ->  " & target & nl
+                auxS &= nl
+                MsgBox(auxS, MsgBoxStyle.Exclamation, "Fatal FTP Error." & nl)
+                txtSalida.AppendText(auxS & nl)
+                Exit Sub
+            End If
+            AnyadetxtSalida(String.Format("Manifest uploaded!" & nl))
+
+
+
+
 
         ElseIf par.DestTipoDestino = "FTP" Or par.DestTipoDestino = "FTPES" Then  '  debo conectarme y copiar desde el temporal al destino
             Dim TIPO_FTP = par.DestTipoDestino
@@ -1296,7 +1598,7 @@ Class MainWindow
                 End Using
                 'Dim response As FtpWebResponse = CType(ftprequest.GetResponse(), FtpWebResponse)
                 'AnyadetxtSalida(String.Format("Upload File Complete, status {0}", response.StatusDescription))
-                AnyadetxtSalida(String.Format("Manifest uploaded!"))
+                AnyadetxtSalida(String.Format("Manifest uploaded!") & nl)
 
             Catch ex As System.Net.WebException
                 MsgBox(auxS, MsgBoxStyle.Critical, "OMG FTP error!")
@@ -1398,7 +1700,7 @@ Class MainWindow
             ' creo que solo es válido con "PATH" y "SHARED_DRIVE"
             Dim lin2() As String
             Select Case par.DestTipoDestino
-                Case "FTP", "FTPES"
+                Case "FTP", "FTPES", "SFTP"
                     msg.Subject = String.Format("PaT name: {0} / From: {1}({2}) / In: {3}", NombrePatsinExtension, par.DestNombre, par.DestCorreo, par.DestFTPHost & "\" & par.DestFTPNombre)
                     lin2 = {
                "<HTML><BODY>",

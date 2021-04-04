@@ -51,6 +51,7 @@
             .Items.Add("SHARED_DRIVE")
             .Items.Add("FTP")
             .Items.Add("FTPES")
+            .Items.Add("SFTP")
         End With
         Return Nothing
     End Function

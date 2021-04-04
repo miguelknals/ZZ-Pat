@@ -14,8 +14,10 @@ Public Class VentanaResumen
             lblSendStatus.Content = "Email will be sent to the translator"
             lblSendStatus.FontWeight = FontWeights.Normal
         Else
+
             lblSendStatus.Content = "Warning: You have selected NOT to send an email to the translator or translator is 'NONE'."
             lblSendStatus.FontWeight = FontWeights.Bold
+            lblSendStatus.Foreground = Brushes.Red
 
 
         End If

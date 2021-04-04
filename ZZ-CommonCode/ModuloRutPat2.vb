@@ -2,6 +2,9 @@
 Imports System.Text
 Imports System.IO
 Imports System.Xml.Serialization
+Imports Renci.SshNet
+Imports Renci.SshNet.Sftp
+
 Public Module ModuloRutPat2
     'Serializable()>
     Public Class classInfoEnvioCorreo
@@ -335,5 +338,10 @@ Public Module ModuloRutPat2
 
         End Try
     End Sub
+
+
+
+
+
 
 End Module

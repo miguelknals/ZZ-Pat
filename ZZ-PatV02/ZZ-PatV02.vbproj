@@ -51,6 +51,9 @@
     <ApplicationIcon>ZZ-PAT-Letra.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Renci.SshNet, Version=2020.0.1.0, Culture=neutral, PublicKeyToken=1cee9f8bde3db106, processorArchitecture=MSIL">
+      <HintPath>..\packages\SSH.NET.2020.0.1\lib\net40\Renci.SshNet.dll</HintPath>
+    </Reference>
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web.Extensions" />
@@ -73,6 +76,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\ZZ-CommonCode\ModuleSFTP.vb">
+      <Link>ModuleSFTP.vb</Link>
+    </Compile>
     <Compile Include="..\ZZ-CommonCode\ModuloRutPat2.vb">
       <Link>ModuloRutPat2.vb</Link>
     </Compile>
@@ -166,6 +172,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <SplashScreen Include="mknals.jpg" />

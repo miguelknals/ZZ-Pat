@@ -15,6 +15,8 @@ Imports System.Net
 Imports System.Net.Mail
 Imports System.Collections.Generic
 Imports System.Configuration ' to read app.settings
+Imports Renci.SshNet
+Imports Renci.SshNet.Sftp
 ' 
 
 
@@ -24,6 +26,12 @@ Class MainWindow
     Dim dq As String = Chr(34) ' Double quote
     Dim ListaCarpetasTraducir As New ClaseListaCarpetasTraducir
     Dim ListaReferencias As New ClaseListaReferencias
+    ' Public Shared GlobalSize As Long = 0
+    ' como colocar variable públicas
+    ' How would I declare a global variable in Visual Basic?
+    ' https://stackoverflow.com/questions/22738243/how-would-i-declare-a-global-variable-in-visual-basic
+
+
 
 
     Dim ValorP As String
@@ -1086,10 +1094,112 @@ Class MainWindow
                             Exit Sub
 
                         End Try
+                    Case "SFTP"
+
+                        Dim TIPO_FTP = destino.DestTipoDestino ' SFTP
+                        AnyadetxtSalida(TIPO_FTP & nl)
+                        Dim Contrasenya As String = DecryptWithKey(destino.DestFTPContrasenya, Par.ParLongInterno)
+                        Contrasenya = Contrasenya.Replace(destino.DestNombre, "")
+                        Dim source As String = Environment.ExpandEnvironmentVariables(Par.ParDirSalidaPaT) & NombrePaT
+                        ' string can have host.name.com:port
+
+                        Dim posicolon As Integer = InStr(destino.DestFTPHost, ":")
+                        Dim sftpport As Integer = 22
+                        Dim sftphost As String = destino.DestFTPHost
+                        If posicolon <> 0 Then
+                            sftpport = CType(sftphost.Substring(posicolon, Len(sftphost) - posicolon), Integer)
+                            sftphost = sftphost.Substring(0, posicolon - 1)
+
+                        End If
+
+                        Dim target As String = destino.DestFTPNombre
+                        If Not target.EndsWith("/") Then target &= "/"
+                        target &= NombrePaT & ".TMP"
+' comentarios
+                        ' he modificado para que la task devolviese el struct (el resultado)
+                        ' https://docs.microsoft.com/es-es/dotnet/standard/parallel-programming/how-to-return-a-value-from-a-task
+
+
+                        Try
+                            ' la idea es definir una structure para pasar los datos y recibir el resultado según link anterior
+                            ' hay que crear una tarea asíncrona pq de forma asíncrona irá actualizando la variable
+                            ' global size que la tarea asíncrona me actulizará en su callback.
+
+                            Dim SFTPUploadFile As strucSFTPUploadFile = New strucSFTPUploadFile(
+                                sftphost, sftpport, destino.DestFTPUsuario, Contrasenya, source, target
+                                )
+                            Dim tsk As Task(Of strucSFTPUploadFile) = Task.Run(Function() UploadMyFile(SFTPUploadFile))
+                            Dim MaxSize As Long = New FileInfo(source).Length
+                            Dim lastpercentage As Integer = -1
+                            Dim porcentage As Integer = 0
+                            GlobalSize = 0 ' iniciamos contador.
+                            While Not tsk.IsCompleted
+                                Threading.Thread.Sleep(1000) ' cada segundo
+                                porcentage = 100 * GlobalSize / MaxSize
+                                If porcentage <> lastpercentage Then
+                                    AnyadetxtSalida(String.Format("Transfered... {0} % ({1}) Kbytes ", porcentage, Int(GlobalSize / 1024)) & nl)
+                                    lastpercentage = porcentage
+                                End If
+                            End While
+                            SFTPUploadFile = tsk.Result
+                            If Not SFTPUploadFile.todoOk Then
+                                auxS = "PaT is fine, but some issue with the sftp transfer. Correct the problem or send PaT manually. " & nl
+                                auxS &= SFTPUploadFile.salida & nl
+                                auxS &= "source ->  " & source & nl
+                                auxS &= "target ->  " & target & nl
+                                auxS &= nl
+                                MsgBox(auxS, MsgBoxStyle.Exclamation, "Fatal FTP Error." & nl)
+                                txtSalida.AppendText(auxS & nl)
+                                Exit Sub
+                            End If
+
+                        Catch ex As Exception
+                            auxS = "PaT is fine, but trying to create the download request. Correct the problem or send PaT manually. " & nl
+                            auxS &= ex.Message.ToString & nl
+                            auxS &= "source ->  " & source & nl
+                            auxS &= "target ->  " & target & nl
+                            auxS &= nl
+                            MsgBox(auxS, MsgBoxStyle.Exclamation, "Fatal FTP Error." & nl)
+                            txtSalida.AppendText(auxS & nl)
+                            Exit Sub
+                        End Try
+
+                        AnyadetxtSalida(String.Format("Upload Working file complete" & nl))
+
+                        ' ahora renombar el Pat.zip.TMP a .Pat.zip
+
+
+                        Dim file2delete As String = target.Replace(".PaT.zip.TMP", ".PaT.zip")
+                        Dim SFTPDeleteFile As strucSFTPDeleteFile = New strucSFTPDeleteFile(
+                                sftphost, sftpport, destino.DestFTPUsuario, Contrasenya, file2delete
+                                )
+
+                        SFTPDeleteFile = DeleteMyFile(SFTPDeleteFile)
+
+                        If SFTPDeleteFile.todoOk Then
+                            AnyadetxtSalida(String.Format("Warning: We have delete a working file -> {0} ", file2delete))
+                        End If
+                        ' nos falta renombar el target a fil2delete 
+                        Dim SFTPRenameFile As strucSFTPRenameFile = New strucSFTPRenameFile(
+                                sftphost, sftpport, destino.DestFTPUsuario, Contrasenya, target, file2delete)
+                        SFTPRenameFile = RenameMyFile(SFTPRenameFile)
+
+                        If Not SFTPRenameFile.todoOk Then ' error fatal no puede ser que no lo renombre
+                            auxS = "PaT is fine, but ZZ-Pat cannot rename in ftp dir. Correct the problem or send PaT manually. " & nl
+                            auxS &= SFTPRenameFile.salida & nl
+                            auxS &= "Rename targeget ->  " & auxS & nl
+                            auxS &= nl
+                            MsgBox(auxS, MsgBoxStyle.Exclamation, "Fatal FTP Error." & nl)
+                            txtSalida.AppendText(auxS & nl)
+                            Exit Sub
+
+                        End If
+                        ' nos falta renombar el target a fil2delete 
+                        AnyadetxtSalida(String.Format("Upload file renamed and ready for client" & nl))
 
 
                     Case Else
-                        auxS = "Internal error. Target has not target type PATH, SHARED_DRIVE or FTP"
+                        auxS = "Internal error. Target has not target type PATH, SHARED_DRIVE, FTPES, SFTP or FTP"
                         AnyadetxtSalida(auxS)
                         MsgBox(auxS, MsgBoxStyle.Exclamation)
                         AnyadetxtSalida("Process continues..." & nl)
@@ -1131,7 +1241,7 @@ Class MainWindow
                             auxS = String.Format("Target directory: {0}", destino.DestPath)
                         Case "SHARED_DRIVE"
                             auxS = String.Format("Target directory: {0}", destino.DestSharedDriveNombre)
-                        Case "FTP", "FTPES"
+                        Case "FTP", "FTPES", "SFTP"
                             auxS = String.Format("{0}: {1}<br>User: {2}<br>Target: {2}", destino.DestTipoDestino, destino.DestFTPHost, destino.DestFTPUsuario, destino.DestFTPNombre)
                     End Select
 
@@ -1323,7 +1433,7 @@ Class MainWindow
     End Sub
 
 
-    Function AnyadetxtSalida(s As String)
+    Public Function AnyadetxtSalida(s As String)
         txtSalida.AppendText(s)
         txtSalida.SelectionStart = txtSalida.Text.Length
         txtSalida.ScrollToEnd()
@@ -1373,7 +1483,7 @@ Class MainWindow
                     auxS &= String.Format(" Target: {0} ", .DestPath)
                 Case "SHARED_DRIVE"
                     auxS &= String.Format(" Target:  {0} ({1})", .DestSharedDriveNombre, .DestSharedDriveUsuario)
-                Case "FTP", "FTPES"
+                Case "FTP", "FTPES", "SFTP"
                     auxS &= String.Format(" {0}:  {1} ({2} / {3})", .DestTipoDestino, .DestFTPNombre, .DestFTPHost, .DestSharedDriveUsuario)
                 Case Else
             End Select
@@ -1409,7 +1519,7 @@ Class MainWindow
                             auxS &= String.Format(" Target: {0} ", .DestPath)
                         Case "SHARED_DRIVE"
                             auxS &= String.Format(" Target:  {0} ({1})", .DestSharedDriveNombre, .DestSharedDriveUsuario)
-                        Case "FTP", "FTPES"
+                        Case "FTP", "FTPES", "SFTP"
                             auxS &= String.Format(" {0}:  {1} ({2} / {3})", .DestTipoDestino, .DestFTPNombre, .DestFTPHost, .DestSharedDriveUsuario)
                         Case Else
                     End Select
@@ -1427,6 +1537,123 @@ Class MainWindow
     Function ObtenDestinoenMain() As String
         Return cbxDestinoPaT.SelectedItem
     End Function
+
+
+    Private Sub btnObtenInfo_Click(sender As Object, e As RoutedEventArgs) Handles btnObtenInfo.Click
+        ' inicio algún contr
+
+        AnyadetxtSalida("")
+
+        Dim auxS As String = ""
+        Dim debuga As Boolean = True
+        Dim boolCrea As Boolean = chkCreateFiles.IsChecked
+        Dim dirCrea As String = ""
+        auxS = Trim(txtSufijo.Text)
+        Dim sufijo As String = ""
+        Dim c As Char
+        For Each c In auxS
+            If c = "0" Or Val(c) > 0 Then
+                sufijo = sufijo & c.ToString
+            ElseIf UCase(c) > "A" And UCase(c) < "Z" Then
+                sufijo = sufijo & c.ToString
+            End If
+        Next
+
+
+
+        If boolCrea Then
+            dirCrea = Trim(txtPatOutput.Text)
+            If Not Directory.Exists(dirCrea) Then
+                auxS = "Looks like directory {0} does not exist. " & nl
+                auxS &= "Create one or fix the entry or do not select the Create report file option. "
+                MsgBox(auxS, MsgBoxStyle.Critical, "Error directory")
+                Exit Sub
+            Else
+                dirCrea = CompruebaAntibarra(dirCrea)
+            End If
+        End If
+        '
+
+        ' antes de hacer nada, miro las condiciones
+        ' 1) Necesito nombre
+        Dim Par As structParametros
+        Par = CargaParametros()
+        Dim carpeta As String = ""
+        Dim perfil As String = ""
+        Dim PathPrefijo As String = Environment.ExpandEnvironmentVariables(Par.ParDirTemporal)
+        If boolCrea Then PathPrefijo = dirCrea
+        Dim fila As DataRow
+        Dim idioma As String = ""
+        Dim ProIBM As String = ""
+        Dim ProMSS As String = "N/A"
+        Dim TengoProIBM As Boolean = False
+
+        For Each fila In ListaCarpetasTraducir.tCarpetasTraducir.Rows
+
+            carpeta = UCase(fila("Carpeta"))
+            perfil = fila("Perfil")
+            auxS = String.Format("Folder {0} Profile {1}" & nl, carpeta, perfil)
+            txtSalida.AppendText(auxS)
+            Dim mandato As String = ""
+            Dim archivosalida = ""
+            Dim opcion As String = ""
+
+            If fila("bCNT") Then
+                archivosalida = PathPrefijo & carpeta & ".CNT"
+                Dim ContajeCT As New structContajeCNT(archivosalida, carpeta)
+                ContajeCT.calcula()
+                If ContajeCT.todoOk Then
+                    fila("CNT") = ContajeCT.contaje
+                    If Not boolCrea Then File.Delete(archivosalida)
+
+                Else
+                    MsgBox(ContajeCT.MsgCorpus, MsgBoxStyle.Information, ContajeCT.MsgTitle)
+                End If
+                txtSalida.AppendText(ContajeCT.salida)
+            End If
+
+            archivosalida = PathPrefijo & String.Format("{0}_{1}_{2}_cal.rpt", carpeta, perfil, sufijo)
+            Dim ContajeCalculating As New structContajeCalculating(archivosalida, carpeta, perfil)
+            ' el CNT detallado es opcion = "TMMATCH"
+            If fila("bIniCal") Then
+                ContajeCalculating.calcula()
+                If ContajeCalculating.todoOk Then
+                    fila("IniCal") = ContajeCalculating.contaje
+                    If Not boolCrea Then File.Delete(archivosalida)
+                Else
+                    MsgBox(ContajeCalculating.MsgCorpus, MsgBoxStyle.Information, ContajeCalculating.MsgTitle)
+                End If
+                txtSalida.AppendText(ContajeCalculating.salida)
+            End If
+
+
+            ' ahora voy con los calculating 
+            ' el preanalisis
+            archivosalida = PathPrefijo & String.Format("{0}_{1}_preana.rpt", carpeta, perfil)
+            Dim ContajePreAnalisis As New structContajePreanalisis(archivosalida, carpeta, perfil)
+            If fila("bPreAna") Then
+                ContajePreAnalisis.calcula()
+                If ContajePreAnalisis.todoOk Then
+                    fila("PreAna") = ContajePreAnalisis.contaje
+                    If Not boolCrea Then File.Delete(archivosalida)
+                Else
+                    MsgBox(ContajePreAnalisis.MsgCorpus, MsgBoxStyle.Information, ContajePreAnalisis.MsgTitle)
+                End If
+                txtSalida.AppendText(ContajePreAnalisis.salida)
+            End If
+
+
+        Next
+        ListaCarpetasTraducir.tCarpetasTraducir.AcceptChanges()
+        dgCarpetas.ItemsSource = ListaCarpetasTraducir.tCarpetasTraducir.DefaultView
+        dgCarpetas.IsReadOnly = True
+
+
+        ' voy a por el informe
+        AnyadetxtSalida("************************  END  ************************ " & nl)
+    End Sub
+
+
 
     Structure structContajeCNT
         Dim todoOk As Boolean
@@ -1641,119 +1868,9 @@ Class MainWindow
         End Sub
     End Structure
 
-    Private Sub btnObtenInfo_Click(sender As Object, e As RoutedEventArgs) Handles btnObtenInfo.Click
-        ' inicio algún contr
-
-        AnyadetxtSalida("")
-
-        Dim auxS As String = ""
-        Dim debuga As Boolean = True
-        Dim boolCrea As Boolean = chkCreateFiles.IsChecked
-        Dim dirCrea As String = ""
-        auxS = Trim(txtSufijo.Text)
-        Dim sufijo As String = ""
-        Dim c As Char
-        For Each c In auxS
-            If c = "0" Or Val(c) > 0 Then
-                sufijo = sufijo & c.ToString
-            ElseIf UCase(c) > "A" And UCase(c) < "Z" Then
-                sufijo = sufijo & c.ToString
-            End If
-        Next
 
 
 
-        If boolCrea Then
-            dirCrea = Trim(txtPatOutput.Text)
-            If Not Directory.Exists(dirCrea) Then
-                auxS = "Looks like directory {0} does not exist. " & nl
-                auxS &= "Create one or fix the entry or do not select the Create report file option. "
-                MsgBox(auxS, MsgBoxStyle.Critical, "Error directory")
-                Exit Sub
-            Else
-                dirCrea = CompruebaAntibarra(dirCrea)
-            End If
-        End If
-        '
-
-        ' antes de hacer nada, miro las condiciones
-        ' 1) Necesito nombre
-        Dim Par As structParametros
-        Par = CargaParametros()
-        Dim carpeta As String = ""
-        Dim perfil As String = ""
-        Dim PathPrefijo As String = Environment.ExpandEnvironmentVariables(Par.ParDirTemporal)
-        If boolCrea Then PathPrefijo = dirCrea
-        Dim fila As DataRow
-        Dim idioma As String = ""
-        Dim ProIBM As String = ""
-        Dim ProMSS As String = "N/A"
-        Dim TengoProIBM As Boolean = False
-
-        For Each fila In ListaCarpetasTraducir.tCarpetasTraducir.Rows
-
-            carpeta = UCase(fila("Carpeta"))
-            perfil = fila("Perfil")
-            auxS = String.Format("Folder {0} Profile {1}" & nl, carpeta, perfil)
-            txtSalida.AppendText(auxS)
-            Dim mandato As String = ""
-            Dim archivosalida = ""
-            Dim opcion As String = ""
-
-            If fila("bCNT") Then
-                archivosalida = PathPrefijo & carpeta & ".CNT"
-                Dim ContajeCT As New structContajeCNT(archivosalida, carpeta)
-                ContajeCT.calcula()
-                If ContajeCT.todoOk Then
-                    fila("CNT") = ContajeCT.contaje
-                    If Not boolCrea Then File.Delete(archivosalida)
-
-                Else
-                    MsgBox(ContajeCT.MsgCorpus, MsgBoxStyle.Information, ContajeCT.MsgTitle)
-                End If
-                txtSalida.AppendText(ContajeCT.salida)
-            End If
-
-            archivosalida = PathPrefijo & String.Format("{0}_{1}_{2}_cal.rpt", carpeta, perfil, sufijo)
-            Dim ContajeCalculating As New structContajeCalculating(archivosalida, carpeta, perfil)
-            ' el CNT detallado es opcion = "TMMATCH"
-            If fila("bIniCal") Then
-                ContajeCalculating.calcula()
-                If ContajeCalculating.todoOk Then
-                    fila("IniCal") = ContajeCalculating.contaje
-                    If Not boolCrea Then File.Delete(archivosalida)
-                Else
-                    MsgBox(ContajeCalculating.MsgCorpus, MsgBoxStyle.Information, ContajeCalculating.MsgTitle)
-                End If
-                txtSalida.AppendText(ContajeCalculating.salida)
-            End If
-
-
-            ' ahora voy con los calculating 
-            ' el preanalisis
-            archivosalida = PathPrefijo & String.Format("{0}_{1}_preana.rpt", carpeta, perfil)
-            Dim ContajePreAnalisis As New structContajePreanalisis(archivosalida, carpeta, perfil)
-            If fila("bPreAna") Then
-                ContajePreAnalisis.calcula()
-                If ContajePreAnalisis.todoOk Then
-                    fila("PreAna") = ContajePreAnalisis.contaje
-                    If Not boolCrea Then File.Delete(archivosalida)
-                Else
-                    MsgBox(ContajePreAnalisis.MsgCorpus, MsgBoxStyle.Information, ContajePreAnalisis.MsgTitle)
-                End If
-                txtSalida.AppendText(ContajePreAnalisis.salida)
-            End If
-
-
-        Next
-        ListaCarpetasTraducir.tCarpetasTraducir.AcceptChanges()
-        dgCarpetas.ItemsSource = ListaCarpetasTraducir.tCarpetasTraducir.DefaultView
-        dgCarpetas.IsReadOnly = True
-
-
-        ' voy a por el informe
-        AnyadetxtSalida("************************  END  ************************ " & nl)
-    End Sub
 
 
 End Class
@@ -2016,6 +2133,14 @@ Public Class ClaseListaCarpetasTraducir
                         Target = hostFTP & destino.DestFTPNombre
                         If Not Target.EndsWith("/") Then Target &= "/"
                         Target &= NombrePaT & ".TMP"
+                    Case "SFTP"
+                        Dim TIPO_FTP = destino.DestTipoDestino ' SFTP
+                        Dim hostFTP As String = destino.DestFTPHost
+                        If Not hostFTP.EndsWith("/") Then hostFTP &= "/"
+
+                        Target = hostFTP & destino.DestFTPNombre
+                        If Not Target.EndsWith("/") Then Target &= "/"
+                        Target &= NombrePaT & ".TMP"
 
                     Case Else
                         ' Other internal error
@@ -2037,7 +2162,7 @@ Public Class ClaseListaCarpetasTraducir
             "<b>Project Manager:</b> {0}" & nl,
             "<b>Source PaT:</b> {0}" & nl,
             "<b>Target PaT:</b> ({0}) {1}" & nl & nl,
-            "<b>Translator:</b> {0} ({1})" & nl & nl,
+            "<b>Translator:</b> <b>{0}</b> ({1})" & nl & nl,
             "<b>Due date:</b> {0}" & nl,
             "" & nl
            }

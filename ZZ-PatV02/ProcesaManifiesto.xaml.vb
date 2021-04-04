@@ -367,7 +367,7 @@ Public Class ProcesaManifiesto
                                 ' end secure
 
                                 Dim respuesta = DirectCast(FTPSolicitud.GetResponse(), FtpWebResponse)
-                                
+
 
                             Catch ex As Exception
                                 AnyadetxtSalida("FTP ERROR *.PaT.zip " & nl)
@@ -384,9 +384,88 @@ Public Class ProcesaManifiesto
                             'File.Delete(source)
                             AnyadetxtSalida("Done!" & nl)
                         Next
+                    Case "SFTP"
+                        Dim TIPO_FTP = TipoDestino
+                        ' sftp info
+                        Dim Contrasenya As String = DecryptWithKey(destino.DestFTPContrasenya, ParLongInterno)
+                        Dim posicolon As Integer = InStr(destino.DestFTPHost, ":")
+                        Dim sftpport As Integer = 22
+                        Dim sftphost As String = destino.DestFTPHost
+                        If posicolon <> 0 Then
+                            sftpport = CType(sftphost.Substring(posicolon, Len(sftphost) - posicolon), Integer)
+                            sftphost = sftphost.Substring(0, posicolon - 1)
+                        End If
 
+
+                        ' tengo que bajar los fxz del repositorio a 
+                        For Each fila In ListaCarpetasTraducir.tCarpetasTraducir.Rows
+                            carpeta = fila("carpeta")
+                            source = String.Format(sourceMascara, carpeta)
+                            Dim ftpfile = destino.DestFTPNombre
+                            If Not ftpfile.EndsWith("/") Then ftpfile &= "/"
+                            ftpfile &= carpeta & ".FXZ"
+                            Dim archivolocal As String = String.Format(TargetMascara, carpeta)
+                            Dim SFTPDownloadFile As strucSFTPDownloadFile = New strucSFTPDownloadFile(
+                               sftphost, sftpport, destino.DestFTPUsuario, Contrasenya, archivolocal, ftpfile)
+                            Try
+                                AnyadetxtSalida(String.Format("File {0}", ftpfile) & nl)
+                                AnyadetxtSalida(String.Format("Downloading to -> {0}", archivolocal) & nl)
+                                Dim tsk As Task(Of strucSFTPDownloadFile) = Task.Run(Function() DownloadMyFile(SFTPDownloadFile))
+                                While Not tsk.IsCompleted
+                                    Threading.Thread.Sleep(1000) ' cada segundo
+                                    AnyadetxtSalida(".")
+                                End While
+                                Console.WriteLine(nl & " Done!" & nl)
+                                If Not SFTPDownloadFile.todoOk Then
+                                    auxS = "Fatal error cannot download PAT file (inner loop): " & nl
+                                    auxS &= "source -> " & SFTPDownloadFile.ftpfile & nl
+                                    auxS &= "target -> " & SFTPDownloadFile.localfile & nl
+                                    auxS &= "Info   -> " & SFTPDownloadFile.salida & nl
+                                    AnyadetxtSalida(auxS)
+                                    auxi = MsgBox(auxS, MsgBoxStyle.Critical, "OMG sftp download PAT error (inner loop)...")
+                                    Exit Sub
+                                End If
+                                AnyadetxtSalida("Done! File download from sftp server. Now we will try to delete it." & nl)
+                                '
+                                ' now we delete the folder
+                                '
+                                Dim SFTPDeleteFile As strucSFTPDeleteFile = New strucSFTPDeleteFile(
+                                sftphost, sftpport, destino.DestFTPUsuario, Contrasenya, ftpfile)
+
+                                SFTPDeleteFile = DeleteMyFile(SFTPDeleteFile)
+
+                                If Not SFTPDeleteFile.todoOk Then
+                                    auxS = "Fatal error cannot delete ftpdir: " & nl
+                                    auxS &= ftpfile & nl
+                                    auxS &= "info -> " & SFTPDeleteFile.salida & nl
+                                    AnyadetxtSalida(auxS)
+                                    auxi = MsgBox(auxS, MsgBoxStyle.Critical, "OMG sftp delete PAT error ...")
+                                    Exit Sub
+                                End If
+
+                                auxS = "File deleted: " & ftpfile & nl
+                                AnyadetxtSalida(auxS)
+
+
+
+                            Catch ex As Exception
+                                auxS = "Fatal error cannot download or detelete PAT file (outer loop): " & nl
+                                auxS &= "local file -> " & SFTPDownloadFile.ftpfile & nl
+                                auxS &= "sftp file -> " & SFTPDownloadFile.localfile & nl
+                                AnyadetxtSalida(auxS)
+                                auxi = MsgBox(auxS, MsgBoxStyle.Critical, "OMG sftp download PAT/delete error (outer loop)...")
+                                Exit Sub
+                            End Try
+
+                        Next
 
                     Case Else
+                        auxS = "Fatal error internal derror " & nl
+                        auxS = String.Format("Target type {0} not supported.", TipoDestino)
+                        AnyadetxtSalida(auxS)
+                        auxi = MsgBox(auxS, MsgBoxStyle.Critical, "OMG Z^Z-Pat internal error ...")
+                        Exit Sub
+
                 End Select
                 ' ahora unzipo los fzx
                 '
